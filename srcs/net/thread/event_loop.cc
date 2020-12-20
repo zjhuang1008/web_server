@@ -14,7 +14,7 @@
 
 using namespace net;
 
-static const int kPollTimeMs = 10000;
+static const int kPollTimeMs = -1;
 
 EventLoop::EventLoop() : 
   wakeup_fd_(sysw::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK)),

@@ -26,8 +26,12 @@ int EpollPoller::poll(int timeout_ms) {
                                     static_cast<int>(events_.size()), 
                                     timeout_ms);
   
+  if (num_events < 0) return num_events;
+  
+  printf("get %d events\n", num_events);
   for (int i = 0; i < num_events; ++ i) {
     ChannelPtr ch = fd2channels_[events_[i].data.fd];
+    printf("get ch with fd=%d event\n", ch->fd());
     ch->set_revents_type(static_cast<size_t>(events_[i].events));
     active_channels_.push_back(ch);
   }

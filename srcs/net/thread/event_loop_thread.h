@@ -18,13 +18,12 @@ public:
   using ChannelPtr = std::shared_ptr<Channel>;
 
   EventLoopThread();
-  ~EventLoopThread();
+  ~EventLoopThread() = default;
   
   void startLoop();
   // EventLoopPtr getLoop() { return loop_; };
 
   void addChannel(ChannelPtr ch);
-  void updateChannel(ChannelPtr ch);
 private:
   EventLoopPtr loop_;
   std::thread thread_;

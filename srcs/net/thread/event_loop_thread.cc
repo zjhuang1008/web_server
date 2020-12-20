@@ -12,9 +12,8 @@ EventLoopThread::EventLoopThread() : loop_(std::make_shared<EventLoop>()) {
   loop_->setWakeupChannel();
 }
 
-EventLoopThread::~EventLoopThread() {
-
-}
+// EventLoopThread::~EventLoopThread() {
+// }
 
 void EventLoopThread::startLoop() {
   thread_ = std::thread(std::bind(&EventLoop::loop, loop_));
@@ -27,8 +26,4 @@ void EventLoopThread::addChannel(ChannelPtr ch) {
   loop_->addPendingCallbacks(ch->registerCallback());
   // wakeup the thread
   loop_->wakeup();
-}
-
-void EventLoopThread::updateChannel(ChannelPtr ch) {
-
 }

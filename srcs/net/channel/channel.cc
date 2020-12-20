@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <sys/poll.h>
+#include <unistd.h>
 
 #include "srcs/net/thread/event_loop.h"
 
@@ -19,6 +20,7 @@ Channel::Channel(FDHandler fd_handler) :
 
 void Channel::defaultRegisterCallback() {
   loop_->addChannelInPoller(shared_from_this());
+  printf("register callback finished.\n");
 }
 
 void Channel::updateToPoller() {
