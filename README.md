@@ -1,0 +1,1 @@
+This is a c++ web server followed the design of [muduo](http://github.com/chenshuo/muduo). I write this repo to help me to get familiar with modern c++, system calls, etc. 
