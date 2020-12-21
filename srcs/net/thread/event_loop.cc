@@ -8,7 +8,6 @@
 
 #include "srcs/net/sys_wrapper/sysw.h"
 #include "srcs/net/channel/channel.h"
-#include "srcs/net/logger/logger.h"
 #include "srcs/net/poller/poller.h"
 #include "srcs/net/fd_handler/fd_handler.h"
 

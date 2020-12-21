@@ -5,7 +5,7 @@
 #include <memory>
 #include <thread>
 
-#include "srcs/net/utils/uncopyable.h"
+#include "srcs/utils/uncopyable.h"
 
 namespace net {
 

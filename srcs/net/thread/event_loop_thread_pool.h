@@ -4,8 +4,8 @@
 #include <vector>
 #include <memory>
 
-#include "srcs/net/utils/types.h"
-#include "srcs/net/utils/uncopyable.h"
+#include "srcs/utils/types.h"
+#include "srcs/utils/uncopyable.h"
 
 namespace net {
 

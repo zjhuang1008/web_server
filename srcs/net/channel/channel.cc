@@ -12,7 +12,7 @@ using namespace net;
 Channel::Channel(FDHandler fd_handler) : 
   fd_handler_(fd_handler),
   registerCallback_(std::bind(&Channel::defaultRegisterCallback, this)) {
-  
+
 }
 
 // Channel::~Channel() {

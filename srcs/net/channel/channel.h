@@ -3,8 +3,8 @@
 
 #include <sys/poll.h>
 
-#include "srcs/net/utils/types.h"
-#include "srcs/net/utils/uncopyable.h"
+#include "srcs/utils/types.h"
+#include "srcs/utils/uncopyable.h"
 #include "srcs/net/fd_handler/fd_handler.h"
 
 namespace net {

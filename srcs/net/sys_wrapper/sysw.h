@@ -1,5 +1,5 @@
-#ifndef SYS_H
-#define SYS_H
+#ifndef SYSW_H
+#define SYSW_H
 
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -20,4 +20,4 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *events);
 int epoll_wait(int epfd, struct epoll_event *events, int max_events, int timeout);
 }
 
-#endif // SYS_H
+#endif // SYSW_H

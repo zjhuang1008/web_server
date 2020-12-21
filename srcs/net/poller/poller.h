@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "srcs/net/utils/uncopyable.h"
+#include "srcs/utils/uncopyable.h"
 
 namespace net {
 

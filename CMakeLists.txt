@@ -45,7 +45,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR})
 # message("project_source_dir: " ${PROJECT_SOURCE_DIR})
 
-add_subdirectory(srcs/net)
+add_subdirectory(srcs)
 
 # set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 # set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

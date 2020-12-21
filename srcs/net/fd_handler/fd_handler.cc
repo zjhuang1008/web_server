@@ -2,8 +2,6 @@
 
 #include <unistd.h>
 
-#include "srcs/net/logger/logger.h"
-
 using namespace net;
 
 struct FDDeleter {

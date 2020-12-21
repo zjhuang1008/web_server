@@ -5,12 +5,14 @@
 #include <sys/eventfd.h>
 #include <sys/epoll.h>
 #include <fcntl.h>
-
-#include "srcs/net/logger/logger.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
 
 
 void sysw::log_error_and_abort() {
-  LOGERR << "errno: " << errno << " " << strerror(errno) << std::endl;
+  // LOGERR << "errno: " << errno << " " << strerror(errno) << std::endl;
+  printf("errno: %s\n", strerror(errno));
   std::abort();
 }
 
