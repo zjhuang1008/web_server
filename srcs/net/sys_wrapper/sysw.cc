@@ -9,9 +9,11 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "srcs/logger/logger.h"
 
 void sysw::log_error_and_abort() {
   // LOGERR << "errno: " << errno << " " << strerror(errno) << std::endl;
+  
   printf("errno: %s\n", strerror(errno));
   std::abort();
 }

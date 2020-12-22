@@ -12,6 +12,6 @@ protected:
   ~Uncopyable() = default;
 };
 
-}
+} // namespace net
 
 #endif // UNCOPYABLE_H
