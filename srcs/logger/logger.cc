@@ -92,6 +92,7 @@ Logger::Logger(SourceFile file, const int line, LogLevel level)
 }
 
 Logger::~Logger() {
+  stream_ << '\n';
   const LogStream::Buffer& buf = stream_.buffer();
   g_output_func(buf.data(), buf.len());
   if (level_ == FATAL) {
@@ -111,8 +112,9 @@ void Logger::writeHeader() {
   formatTime();  
   curr_thread::cacheID();
   stream_ << StaticStrHolder(curr_thread::getTidStr(), curr_thread::getTidStrLen());
-  stream_ << StaticStrHolder(kLogLevelName[level_], 6);
-  stream_ << " - " << file_ << ':' << line_ << '\n';
+  stream_ << file_ << ':' << line_ << ' ';
+  stream_ << StaticStrHolder(kLogLevelName[level_], 6) << ": ";
+  
   if (saved_errno_ != 0) {
     stream_ << strerror_tl(saved_errno_) << " (errno=" << saved_errno_ << ") ";
   }

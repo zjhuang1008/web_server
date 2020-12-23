@@ -181,6 +181,21 @@ LogStream& LogStream::operator<<(const void* p) {
   return *this;
 }
 
+LogStream& LogStream::operator<<(const Fmt& fmt) {
+  buffer_.append(fmt.buf(), fmt.len());
+  return *this;
+}
+
+LogStream& LogStream::operator<<(const StaticStrHolder& str) {
+  buffer_.append(str.str_, str.len_);
+  return *this;
+}
+
+LogStream& LogStream::operator<<(const SourceFile& file) {
+  buffer_.append(file.data_, file.len_);
+  return *this;
+}
+
 template<typename T>
 Fmt::Fmt(const char* fmt, T v) {
   static_assert(std::is_arithmetic<T>::value == true, "Must be arithmetic type");
@@ -189,20 +204,20 @@ Fmt::Fmt(const char* fmt, T v) {
   assert(len_ < sizeof buf_);
 }
 
-LogStream& operator<<(LogStream& log_stream, const Fmt& fmt) {
-  log_stream.append(fmt.buf(), fmt.len());
-  return log_stream;
-}
+// LogStream& operator<<(LogStream& log_stream, const Fmt& fmt) {
+//   log_stream.append(fmt.buf(), fmt.len());
+//   return log_stream;
+// }
 
-LogStream& operator<<(LogStream& log_stream, const StaticStrHolder& str) {
-  log_stream.append(str.str_, str.len_);
-  return log_stream;
-}
+// LogStream& operator<<(LogStream& log_stream, const StaticStrHolder& str) {
+//   log_stream.append(str.str_, str.len_);
+//   return log_stream;
+// }
 
-LogStream& operator<<(LogStream& log_stream, const SourceFile& file) {
-  log_stream.append(file.data_, file.len_);
-  return log_stream;
-}
+// LogStream& operator<<(LogStream& log_stream, const SourceFile& file) {
+//   log_stream.append(file.data_, file.len_);
+//   return log_stream;
+// }
 
 // Explicit instantiations
 template Fmt::Fmt(const char* fmt, char);

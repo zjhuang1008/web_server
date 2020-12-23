@@ -53,6 +53,55 @@ private:
   char* curr_;
 };
 
+class Fmt : private Uncopyable {
+public:
+  template<typename T>
+  Fmt(const char* fmt, T v);
+
+  const char* buf() const { return buf_; }
+  size_t len() const { return len_; }
+private:
+  char buf_[32];
+  size_t len_;
+};
+
+// LogStream& operator<<(LogStream& log_stream, const Fmt& fmt);
+
+// used for str that has known length at compile time
+class StaticStrHolder {
+public:
+  StaticStrHolder(const char* str, size_t len) : str_(str), len_(len) {};
+  const char* str_;
+  size_t len_;
+};
+
+// LogStream& operator<<(LogStream& log_stream, const StaticStrHolder& str);
+
+class SourceFile {
+public:
+  template<int N>
+  SourceFile(const char (&file)[N]) : data_(file), len_(N-1) {
+    const char *slash = strrchr(file, '/');
+    if (slash) {
+      data_ = slash + 1;
+      len_ -= static_cast<int>(data_ - file);
+    }
+  }
+
+  explicit SourceFile(const char *file) : data_(file) {
+    const char *slash = strrchr(file, '/');
+    if (slash) {
+      data_ = slash + 1;
+    }
+    len_ = static_cast<int>(strlen(data_));
+  }
+
+  const char *data_;
+  int len_;
+};
+
+// LogStream& operator<<(LogStream& log_stream, const SourceFile& file);
+
 class LogStream : private Uncopyable {
 public:
   using self = LogStream;
@@ -90,61 +139,14 @@ public:
 
   self& operator<<(const void*);
 
+  self& operator<<(const Fmt& fmt);
+  self& operator<<(const StaticStrHolder& str);
+  self& operator<<(const SourceFile& file);
 private:
   static const int kMaxNumericSize = 32;
 
   Buffer buffer_;
 };
-
-class Fmt : private Uncopyable {
-public:
-  template<typename T>
-  Fmt(const char* fmt, T v);
-
-  const char* buf() const { return buf_; }
-  size_t len() const { return len_; }
-private:
-  char buf_[32];
-  size_t len_;
-};
-
-template<typename T>
-LogStream& operator<<(LogStream& log_stream, const Fmt& fmt);
-
-// used for str that has known length at compile time
-class StaticStrHolder {
-public:
-  StaticStrHolder(const char* str, size_t len) : str_(str), len_(len) {};
-  const char* str_;
-  size_t len_;
-};
-
-LogStream& operator<<(LogStream& log_stream, const StaticStrHolder& str);
-
-class SourceFile {
-public:
-  template<int N>
-  SourceFile(const char (&file)[N]) : data_(file), len_(N-1) {
-    const char *slash = strrchr(file, '/');
-    if (slash) {
-      data_ = slash + 1;
-      len_ -= static_cast<int>(data_ - file);
-    }
-  }
-
-  explicit SourceFile(const char *file) : data_(file) {
-    const char *slash = strrchr(file, '/');
-    if (slash) {
-      data_ = slash + 1;
-    }
-    len_ = static_cast<int>(strlen(data_));
-  }
-
-  const char *data_;
-  int len_;
-};
-
-LogStream& operator<<(LogStream& log_stream, const SourceFile& file);
 
 } // namespace net
 
