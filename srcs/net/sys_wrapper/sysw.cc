@@ -11,10 +11,11 @@
 
 #include "srcs/logger/logger.h"
 
+using namespace net;
+
 void sysw::log_error_and_abort() {
-  // LOGERR << "errno: " << errno << " " << strerror(errno) << std::endl;
+  LOG(ERROR) << "errno: " << errno << " " << strerror(errno);
   
-  printf("errno: %s\n", strerror(errno));
   std::abort();
 }
 

@@ -57,7 +57,7 @@ const constexpr char* kLogLevelName[NUM_LOG_LEVELS] = {
 };
 
 LogLevel initMinLogLevel() {
-  int min_log_lvl = 1;
+  int min_log_lvl = 0; // default log level
   char *min_log_level_env = ::getenv("MIN_LOG_LEVEL");
   if (min_log_level_env) min_log_lvl = atoi(min_log_level_env);
   
@@ -76,7 +76,7 @@ void defaultFlushFunc() {
 
 using namespace net;
 
-LogLevel min_log_level = initMinLogLevel();
+LogLevel net::g_min_log_level = initMinLogLevel();
 
 Logger::OutputFunc g_output_func = defaultOutputFunc;
 Logger::FlushFunc g_flush_func = defaultFlushFunc;
@@ -87,6 +87,16 @@ Logger::Logger(SourceFile file, const int line, LogLevel level)
     line_(line),
     level_(level),
     saved_errno_(0),
+    time_(Timestamp::now()) {
+  writeHeader();
+}
+
+Logger::Logger(SourceFile file, const int line, LogLevel level, bool log_errno) 
+  : stream_(),
+    file_(std::move(file)),
+    line_(line),
+    level_(level),
+    saved_errno_(errno),
     time_(Timestamp::now()) {
   writeHeader();
 }
@@ -112,7 +122,8 @@ void Logger::writeHeader() {
   formatTime();  
   curr_thread::cacheID();
   stream_ << StaticStrHolder(curr_thread::getTidStr(), curr_thread::getTidStrLen());
-  stream_ << file_ << ':' << line_ << ' ';
+  // stream_ << file_ << ':' << line_ << ' ';
+  formatFileAndLine();
   stream_ << StaticStrHolder(kLogLevelName[level_], 6) << ": ";
   
   if (saved_errno_ != 0) {
@@ -151,4 +162,10 @@ void Logger::formatTime() {
     assert(us.len() == 9);
     stream_ << StaticStrHolder(curr_thread::t_time, 17) << StaticStrHolder(us.buf(), 9);
   }
+}
+
+void Logger::formatFileAndLine() {
+  char buf[64];
+  snprintf(buf, sizeof buf, "%20s:%d ", file_.data_, line_);
+  stream_ << buf;
 }

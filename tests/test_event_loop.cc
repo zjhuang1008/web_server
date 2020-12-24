@@ -15,8 +15,9 @@
 #include "srcs/net/thread/event_loop.h"
 #include "srcs/net/thread/event_loop_thread_pool.h"
 #include "srcs/net/fd_handler/fd_handler.h"
-// #include "srcs/logger/logger.h"
+#include "srcs/logger/logger.h"
 
+using namespace net;
 
 void sendMessageToNextThread(net::EventLoop::EventLoopPtr& loop, net::EventLoopThreadPool& thread_pool) {
   int fd = sysw::open("test", O_RDWR | O_CREAT);
@@ -42,7 +43,7 @@ int main(int argc, char* argv[]) {
   
   // net::EventLoop::EventLoopPtr loop = std::make_shared<net::EventLoop>();
   net::EventLoopThreadPool thread_pool(num_threads);  
-  // LOG(net::INFO) << "begin"; 
+  LOG(INFO) << "begin thread_pool"; 
   // sendMessageToNextThread(loop, thread_pool);
   int fd = sysw::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
   
@@ -51,17 +52,17 @@ int main(int argc, char* argv[]) {
     uint64_t one;
     sysw::read(ch->fd(), &one, sizeof(one));
 
-    printf("read: %" PRIu64 "\n", one);
+    LOG(DEBUG) << "read: " << one;
   });
   ch->enableReading();
 
   thread_pool.enqueue(ch);
   
-  printf("main thread waked\n");
+  LOG(INFO) << "main thread waked";
 
   uint64_t one = 1;
   sysw::write(ch->fd(), &one, sizeof(one));
-  printf("write: %" PRIu64 "\n", one);
+  LOG(INFO) << "write: " << one;
 
   for (;;);
   // loop->loop();

@@ -6,6 +6,7 @@
 
 #include "srcs/net/channel/channel.h"
 #include "srcs/net/sys_wrapper/sysw.h"
+#include "srcs/logger/logger.h"
 
 using namespace net;
 
@@ -28,10 +29,11 @@ int EpollPoller::poll(int timeout_ms) {
   
   if (num_events < 0) return num_events;
   
-  printf("get %d events\n", num_events);
+  LOG(DEBUG) << Fmt("get %d events", num_events);
+
   for (int i = 0; i < num_events; ++ i) {
     ChannelPtr ch = fd2channels_[events_[i].data.fd];
-    printf("get ch with fd=%d event\n", ch->fd());
+    LOG(DEBUG) << Fmt("get ch with fd=%d event", ch->fd());
     ch->set_revents_type(static_cast<size_t>(events_[i].events));
     active_channels_.push_back(ch);
   }

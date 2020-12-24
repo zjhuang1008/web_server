@@ -10,7 +10,6 @@
 #include "srcs/net/channel/channel.h"
 #include "srcs/net/poller/poller.h"
 #include "srcs/net/fd_handler/fd_handler.h"
-#include "srcs/logger/logger.h"
 
 using namespace net;
 
@@ -19,7 +18,6 @@ static const int kPollTimeMs = -1;
 EventLoop::EventLoop() : 
   wakeup_fd_(sysw::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK)),
   poller_(Poller::newPoller()) {
-  LOG(INFO) << "eventloop ctor";
 }
 
 // EventLoop::~EventLoop() {

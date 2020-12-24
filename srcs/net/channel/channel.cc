@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include "srcs/net/thread/event_loop.h"
-
+#include "srcs/logger/logger.h"
 
 using namespace net;
 
@@ -20,7 +20,7 @@ Channel::Channel(FDHandler fd_handler) :
 
 void Channel::defaultRegisterCallback() {
   loop_->addChannelInPoller(shared_from_this());
-  printf("register callback finished.\n");
+  LOG(DEBUG) << "register callback finished.";
 }
 
 void Channel::updateToPoller() {

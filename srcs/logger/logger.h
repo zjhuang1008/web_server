@@ -24,6 +24,7 @@ public:
   using FlushFunc = std::function<void()>;
   
   Logger(SourceFile file, const int line, LogLevel level);
+  Logger(SourceFile file, const int line, LogLevel level, bool log_errno);
   ~Logger();
 
   LogStream& stream() { return stream_; };
@@ -39,14 +40,15 @@ private:
   Timestamp time_;
 
   void formatTime();
+  void formatFileAndLine();
   void writeHeader();
 };
 
-extern LogLevel min_log_level;
-
-
-#define LOG(level) net::Logger(__FILE__, __LINE__, level).stream()
+extern net::LogLevel g_min_log_level;
+#define LOG(level) if (level >= g_min_log_level) net::Logger(__FILE__, __LINE__, level).stream()
+#define LOGSYS(level) if (level >= g_min_log_level) net::Logger(__FILE__, __LINE__, level, true).stream()
 
 } // namespace net
+
 
 #endif // LOGGER_H
