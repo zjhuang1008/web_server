@@ -1,14 +1,16 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include <socket.h>
+#include <memory>
+#include <sys/socket.h>
 
 #include "srcs/utils/uncopyable.h"
 #include "srcs/server/socket_address.h"
+#include "srcs/net/fd_handler/fd_handler.h"
 
 namespace net {
 
-class FDHandler;
+class EventLoop;
 
 class Acceptor : private Uncopyable {
 public:

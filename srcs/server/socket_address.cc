@@ -1,12 +1,13 @@
 #include "srcs/server/socket_address.h"
 
 #include <string.h>
+#include <stddef.h>
 #include <netinet/in.h>
 
 using namespace net;
 
 SocketAddress::SocketAddress(uint16_t port, bool loopbackOnly) {
-  static_assert(offsetof(InetAddress, addr_) == 0, "addr_ offset 0");
+  static_assert(offsetof(SocketAddress, addr_) == 0, "addr_ offset 0");
   
   memset(&addr_, 0, sizeof addr_);
   addr_.sin_family = AF_INET;
