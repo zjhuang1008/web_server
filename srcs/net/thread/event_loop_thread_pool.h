@@ -17,14 +17,14 @@ public:
   using EventLoopThreadPtr = std::shared_ptr<EventLoopThread>;
   using ChannelPtr = std::shared_ptr<Channel>;
 
-  EventLoopThreadPool(int num_threads);
+  EventLoopThreadPool(size_t num_threads);
   ~EventLoopThreadPool() = default;
 
   // void start();
 
   void enqueue(ChannelPtr ch);
 private:
-  int num_threads_;
+  size_t num_threads_;
   std::vector<EventLoopThreadPtr> threads_;
   
   // use round-robin

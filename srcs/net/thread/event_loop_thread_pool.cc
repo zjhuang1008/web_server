@@ -1,6 +1,7 @@
 #include "srcs/net/thread/event_loop_thread_pool.h"
 
 #include <memory>
+#include <assert.h>
 
 #include "srcs/net/thread/event_loop_thread.h"
 #include "srcs/net/fd_handler/fd_handler.h"
@@ -8,10 +9,10 @@
 
 using namespace net;
 
-EventLoopThreadPool::EventLoopThreadPool(int num_threads) : 
+EventLoopThreadPool::EventLoopThreadPool(size_t num_threads) : 
   num_threads_(num_threads),
   next_thread_idx_(0) {
-  for (auto i = 0; i < num_threads_; ++ i) {
+  for (size_t i = 0; i < num_threads_; ++ i) {
     auto event_loop_thread_ptr = std::make_shared<EventLoopThread>();
     threads_.push_back(event_loop_thread_ptr);
     event_loop_thread_ptr->startLoop();
