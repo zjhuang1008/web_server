@@ -1,5 +1,6 @@
 #include <memory>
 #include <functional>
+#include <utility>
 
 #include <sys/poll.h>
 
@@ -20,7 +21,7 @@ public:
   Channel(FDHandler fd_handler);
   ~Channel() = default;
   
-  void setLoop(EventLoopPtr loop) { loop_ = loop; };
+  void setLoop(EventLoopPtr loop) { loop_ = std::move(loop); };
   
   void enableReading() { events_type_ |= POLLIN; };
   void disableReading() { events_type_ &= ~POLLIN; };

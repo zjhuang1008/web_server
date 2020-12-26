@@ -16,14 +16,12 @@ EventLoopThread::EventLoopThread() : loop_(std::make_shared<EventLoop>()) {
 // }
 
 void EventLoopThread::startLoop() {
-  thread_ = std::thread(std::bind(&EventLoop::loop, loop_));
+  thread_ = std::thread(std::bind(&EventLoop::startLoop, loop_));
 }
 
 void EventLoopThread::addChannel(ChannelPtr ch) {
   ch->setLoop(loop_);
     
   // send job to the thread
-  loop_->addPendingCallbacks(ch->registerCallback());
-  // wakeup the thread
-  loop_->wakeup();
+  loop_->runInLoop(ch->registerCallback());
 }

@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 #include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/utils/types.h"
@@ -26,7 +27,9 @@ public:
   /// used by main thread
   void setWakeupChannel();
   void wakeup();
-  void addPendingCallbacks(Callback cb);
+
+  void runInLoop(Callback cb);
+  void queueInLoop(Callback cb);
 
   /// used by this thread
   void wakeupCallback();
@@ -35,12 +38,20 @@ public:
   void updateChannelInPoller(const ChannelPtr& ch);
   // void removeChannel(const ChannelPtr& ch);
 
-  void loop();
+  bool isInLoopThread() { return thread_id_ == std::this_thread::get_id(); }
 
-  void doPendingCallbacks();
+  void startLoop();
+  void endLoop();
+
 private:
+  void loop();
+  void doPendingCallbacks();
+
   mutable std::mutex mutex_;
-  bool quit_;
+  std::thread::id thread_id_;
+
+  bool looping_;
+  // bool doing_pending_callbacks_;
 
   ChannelPtr wakeup_channel_;
   FDHandler wakeup_fd_;  

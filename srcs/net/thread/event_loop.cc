@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <mutex>
+// #include <thread>
 #include <sys/eventfd.h>
 
 #include "srcs/net/sys_wrapper/sysw.h"
@@ -16,6 +17,7 @@ using namespace net;
 static const int kPollTimeMs = -1;
 
 EventLoop::EventLoop() : 
+  thread_id_(std::this_thread::get_id()),
   wakeup_fd_(sysw::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK)),
   poller_(Poller::newPoller()) {
 }
@@ -53,12 +55,28 @@ void EventLoop::updateChannelInPoller(const ChannelPtr& ch) {
 //   poller_->removeChannel(ch);
 // }
 
+void EventLoop::startLoop() {
+  {
+    std::lock_guard<std::mutex> lk(mutex_);
+    looping_ = true;
+    thread_id_ = std::this_thread::get_id();
+  }
+  loop();
+}
+
+void EventLoop::endLoop() {
+  {
+    std::lock_guard<std::mutex> lk(mutex_);
+    looping_ = false;
+  }
+}
+
 void EventLoop::loop() {
-  while (!quit_) {
+  while (looping_) {
     // int num_events = 
     poller_->poll(kPollTimeMs);
     
-    for (auto ch : poller_->active_channels()) {
+    for (auto& ch : poller_->active_channels()) {
       ch->handleEvent();
     }
     
@@ -68,7 +86,6 @@ void EventLoop::loop() {
 
 void EventLoop::doPendingCallbacks() {
   std::vector<Callback> excuting_callbacks;
-  
   {
     std::lock_guard<std::mutex> lk(mutex_);
     excuting_callbacks.swap(pending_callbacks_);
@@ -79,9 +96,22 @@ void EventLoop::doPendingCallbacks() {
   }
 }
 
-void EventLoop::addPendingCallbacks(Callback cb) {
+void EventLoop::runInLoop(Callback cb) {
+  if (isInLoopThread()) {
+    cb();
+  } else {
+    queueInLoop(std::move(cb));
+  }
+}
+
+void EventLoop::queueInLoop(Callback cb) {
   {
     std::lock_guard<std::mutex> lk(mutex_);
     pending_callbacks_.push_back(std::move(cb));
+  }
+  
+  if (!isInLoopThread()) {
+    // TODO: wakeup only no events happening.
+    wakeup();
   }
 }

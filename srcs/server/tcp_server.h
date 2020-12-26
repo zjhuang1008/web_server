@@ -17,6 +17,8 @@ public:
 
   void start();
 private:
+  void socketReadCallback();
+
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
 };
