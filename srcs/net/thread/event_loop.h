@@ -7,7 +7,7 @@
 #include <thread>
 
 #include "srcs/net/fd_handler/fd_handler.h"
-#include "srcs/utils/types.h"
+#include "srcs/net/types.h"
 #include "srcs/utils/uncopyable.h"
 
 namespace net {
@@ -17,9 +17,9 @@ class Poller;
 
 class EventLoop : public std::enable_shared_from_this<EventLoop>, private Uncopyable {
 public:
-  using EventLoopPtr = std::shared_ptr<EventLoop>;
-  using PollerPtr = std::shared_ptr<Poller>;
-  using ChannelPtr = std::shared_ptr<Channel>;
+  // using EventLoopPtr = std::shared_ptr<EventLoop>;
+  // using PollerPtr = std::shared_ptr<Poller>;
+  // using ChannelPtr = std::shared_ptr<Channel>;
 
   EventLoop();
   ~EventLoop() = default;

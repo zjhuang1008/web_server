@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "srcs/utils/uncopyable.h"
+#include "srcs/net/types.h"
 
 namespace net {
 
@@ -13,9 +14,8 @@ class Channel;
 
 class Poller : private Uncopyable {
 public:
-  using PollerPtr = std::shared_ptr<Poller>;
-  using ChannelPtr = std::shared_ptr<Channel>;
-  using ChannelPtrList = std::vector<ChannelPtr>;
+  // using PollerPtr = std::shared_ptr<Poller>;
+  // using ChannelPtr = std::shared_ptr<Channel>;
 
   Poller();
   virtual ~Poller();

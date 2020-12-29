@@ -26,8 +26,8 @@ EventLoop::EventLoop() :
 // }
 
 void EventLoop::setWakeupChannel() {
-  wakeup_channel_ = std::make_shared<Channel>(wakeup_fd_);
-  wakeup_channel_->setLoop(shared_from_this());
+  wakeup_channel_ = std::make_shared<Channel>(shared_from_this(), wakeup_fd_);
+  // wakeup_channel_->setLoop(shared_from_this());
   wakeup_channel_->enableReading();
   wakeup_channel_->setReadCallback(std::bind(&EventLoop::wakeupCallback, this));
   this->addChannelInPoller(wakeup_channel_);

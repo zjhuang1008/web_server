@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "srcs/utils/uncopyable.h"
+#include "srcs/net/types.h"
 
 namespace net {
 
@@ -14,16 +15,16 @@ class EventLoop;
 
 class EventLoopThread : private Uncopyable {
 public:
-  using EventLoopPtr = std::shared_ptr<EventLoop>;
-  using ChannelPtr = std::shared_ptr<Channel>;
+  // using EventLoopPtr = std::shared_ptr<EventLoop>;
+  // using ChannelPtr = std::shared_ptr<Channel>;
 
   EventLoopThread();
   ~EventLoopThread() = default;
   
   void startLoop();
-  // EventLoopPtr getLoop() { return loop_; };
+  EventLoopPtr loop() { return loop_; };
 
-  void addChannel(ChannelPtr ch);
+  // void addChannel(ChannelPtr ch);
 private:
   EventLoopPtr loop_;
   std::thread thread_;

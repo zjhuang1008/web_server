@@ -4,7 +4,7 @@
 
 #include <sys/poll.h>
 
-#include "srcs/utils/types.h"
+#include "srcs/net/types.h"
 #include "srcs/utils/uncopyable.h"
 #include "srcs/net/fd_handler/fd_handler.h"
 
@@ -15,13 +15,13 @@ class EventLoop;
 // will be shared by a poller and a holder.
 class Channel : public std::enable_shared_from_this<Channel>, private Uncopyable {
 public:
-  using ChannelPtr = std::shared_ptr<Channel>;
-  using EventLoopPtr = std::shared_ptr<EventLoop>;
+  // using ChannelPtr = std::shared_ptr<Channel>;
+  // using EventLoopPtr = std::shared_ptr<EventLoop>;
 
-  Channel(FDHandler fd_handler);
+  Channel(EventLoopPtr loop, FDHandler fd_handler);
   ~Channel() = default;
   
-  void setLoop(EventLoopPtr loop) { loop_ = std::move(loop); };
+  // void setLoop(EventLoopPtr loop) { loop_ = std::move(loop); };
   
   void enableReading() { events_type_ |= POLLIN; };
   void disableReading() { events_type_ &= ~POLLIN; };
@@ -33,16 +33,18 @@ public:
   void handleEvent();
 
   // called when channel are first register in loop
-  Callback registerCallback() { return registerCallback_; }
-  void setRegisterCallback(Callback cb) { registerCallback_ = std::move(cb); };
-  void defaultRegisterCallback();
+  // Callback registerCallback() { return registerCallback_; }
+  // void setRegisterCallback(Callback cb) { registerCallback_ = std::move(cb); }
+  // void defaultRegisterCallback();
 
   // called when read is ready on fd
-  void setReadCallback(Callback cb) { readCallback_ = std::move(cb); };
+  void setReadCallback(Callback cb) { readCallback_ = std::move(cb); }
   // called when write is ready on fd
-  void setWriteCallback(Callback cb) { writeCallback_ = std::move(cb); };
+  void setWriteCallback(Callback cb) { writeCallback_ = std::move(cb); }
   // called when close
-  void setCloseCallback(Callback cb) { closeCallback_ = std::move(cb); };
+  void setCloseCallback(Callback cb) { closeCallback_ = std::move(cb); }
+  // called when error happened
+  void setErrorCallback(Callback cb) { errorCallback_ = std::move(cb); }
 
   int fd() { return fd_handler_; }
   size_t events_type() { return events_type_; }
@@ -55,10 +57,11 @@ private:
   size_t events_type_;  // epoll events
   size_t revents_type_;  // epoll revents
 
-  Callback registerCallback_;
+  // Callback registerCallback_;
   Callback readCallback_;
   Callback writeCallback_;
   Callback closeCallback_;
+  Callback errorCallback_;
 };
 
 } // namespace net

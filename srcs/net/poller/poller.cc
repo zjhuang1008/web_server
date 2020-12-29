@@ -12,7 +12,7 @@ Poller::~Poller() {
 
 }
 
-Poller::PollerPtr Poller::newPoller() {
+PollerPtr Poller::newPoller() {
 #ifdef USE_EPOLL
   return std::make_shared<EpollPoller>();
 #endif

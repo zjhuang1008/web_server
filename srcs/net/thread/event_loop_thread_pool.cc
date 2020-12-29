@@ -22,6 +22,10 @@ EventLoopThreadPool::EventLoopThreadPool(size_t num_threads) :
 // EventLoopThreadPool::~EventLoopThreadPool() {
 // }
 
+EventLoopPtr EventLoopThreadPool::getNextLoop() {
+  return getNextThread()->loop();
+}
+
 // void EventLoopThreadPool::start() {
 //   for (auto i = 0; i < num_threads_; ++ i) {
 //     auto event_loop_thread_ptr = std::make_shared<EventLoopThread>();
@@ -30,12 +34,12 @@ EventLoopThreadPool::EventLoopThreadPool(size_t num_threads) :
 //   }
 // }
 
-void EventLoopThreadPool::enqueue(ChannelPtr ch) {
-  EventLoopThreadPtr& thread = getNextThread();
-  thread->addChannel(std::move(ch));
-}
+// void EventLoopThreadPool::enqueue(ChannelPtr ch) {
+//   EventLoopThreadPtr& thread = getNextThread();
+//   thread->addChannel(std::move(ch));
+// }
 
-EventLoopThreadPool::EventLoopThreadPtr& EventLoopThreadPool::getNextThread() {
+EventLoopThreadPtr& EventLoopThreadPool::getNextThread() {
   EventLoopThreadPtr& thread = threads_[next_thread_idx_];
   next_thread_idx_ = (next_thread_idx_ + 1) % (threads_.size());
 

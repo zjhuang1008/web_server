@@ -9,13 +9,12 @@ namespace net {
 
 class FDHandler : private Copyable {
 public:
-  using FDPtr = std::shared_ptr<int>;
   FDHandler(const int& fd);
   
   operator int() const { return *fd_ptr_; };
   int get();
 private:
-  FDPtr fd_ptr_;
+  std::shared_ptr<int> fd_ptr_;
 };
 
 } // namespace net
