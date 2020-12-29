@@ -15,14 +15,9 @@ class EventLoop;
 // will be shared by a poller and a holder.
 class Channel : public std::enable_shared_from_this<Channel>, private Uncopyable {
 public:
-  // using ChannelPtr = std::shared_ptr<Channel>;
-  // using EventLoopPtr = std::shared_ptr<EventLoop>;
-
   Channel(EventLoopPtr loop, FDHandler fd_handler);
   ~Channel() = default;
-  
-  // void setLoop(EventLoopPtr loop) { loop_ = std::move(loop); };
-  
+    
   void enableReading() { events_type_ |= POLLIN; };
   void disableReading() { events_type_ &= ~POLLIN; };
   void enableWriting() { events_type_ |= POLLOUT; };
@@ -31,12 +26,7 @@ public:
   void updateToPoller();
 
   void handleEvent();
-
-  // called when channel are first register in loop
-  // Callback registerCallback() { return registerCallback_; }
-  // void setRegisterCallback(Callback cb) { registerCallback_ = std::move(cb); }
-  // void defaultRegisterCallback();
-
+  
   // called when read is ready on fd
   void setReadCallback(Callback cb) { readCallback_ = std::move(cb); }
   // called when write is ready on fd

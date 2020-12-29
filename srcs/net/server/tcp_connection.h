@@ -11,7 +11,6 @@ namespace net {
 class TCPConnection : private Uncopyable,
                       public std::enable_shared_from_this<TCPConnection> {
 public:
-  // using ChannelPtr = std::shared_ptr<Channel>;
   TCPConnection(EventLoopPtr io_loop, ChannelPtr channel);
 
   void connectionEstablished();
@@ -21,7 +20,6 @@ private:
   ChannelPtr channel_;
 
   Callback readCallback_;
-
 };
 
 } // namespace net

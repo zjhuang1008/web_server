@@ -14,9 +14,6 @@ class Channel;
 
 class Poller : private Uncopyable {
 public:
-  // using PollerPtr = std::shared_ptr<Poller>;
-  // using ChannelPtr = std::shared_ptr<Channel>;
-
   Poller();
   virtual ~Poller();
 

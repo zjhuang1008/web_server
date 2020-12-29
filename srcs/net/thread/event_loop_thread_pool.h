@@ -15,18 +15,10 @@ class EventLoopThread;
 
 class EventLoopThreadPool : private Uncopyable {
 public:
-  // using EventLoopThreadPtr = std::shared_ptr<EventLoopThread>;
-  // using EventLoopPtr = std::shared_ptr<EventLoop>;
-  // using ChannelPtr = std::shared_ptr<Channel>;
-
   EventLoopThreadPool(size_t num_threads);
   ~EventLoopThreadPool() = default;
 
   EventLoopPtr getNextLoop();
-
-  // void start();
-
-  // void enqueue(ChannelPtr ch);
 private:
   size_t num_threads_;
   std::vector<EventLoopThreadPtr> threads_;

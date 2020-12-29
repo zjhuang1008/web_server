@@ -33,7 +33,6 @@ private:
 
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
-
 };
 
 } // namespace net

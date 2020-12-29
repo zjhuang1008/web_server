@@ -15,9 +15,6 @@ class EventLoop;
 
 class EventLoopThread : private Uncopyable {
 public:
-  // using EventLoopPtr = std::shared_ptr<EventLoop>;
-  // using ChannelPtr = std::shared_ptr<Channel>;
-
   EventLoopThread();
   ~EventLoopThread() = default;
   

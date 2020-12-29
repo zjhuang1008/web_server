@@ -17,10 +17,6 @@ class Poller;
 
 class EventLoop : public std::enable_shared_from_this<EventLoop>, private Uncopyable {
 public:
-  // using EventLoopPtr = std::shared_ptr<EventLoop>;
-  // using PollerPtr = std::shared_ptr<Poller>;
-  // using ChannelPtr = std::shared_ptr<Channel>;
-
   EventLoop();
   ~EventLoop() = default;
 
