@@ -5,11 +5,12 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 
 
 namespace sysw {
 
-inline void log_error_and_abort(const char* which);
+inline void log_error(const char* which);
 
 int open(const char* path, int flag);
 ssize_t write(int fd, const void* buf, size_t count);
@@ -26,6 +27,8 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 int listen(int sockfd, int backlog);
 int accept4(int sockfd, struct sockaddr *addr, socklen_t *addrlen, int flags = 0);
 int connect(int clientfd, const struct sockaddr *addr, socklen_t addrlen);
+
+ssize_t readv(int fd, const struct iovec *iov, int iovcnt);
 
 }
 

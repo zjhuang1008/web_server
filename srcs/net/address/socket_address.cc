@@ -1,4 +1,4 @@
-#include "srcs/net/server/socket_address.h"
+#include "srcs/net/address/socket_address.h"
 
 #include <string>
 

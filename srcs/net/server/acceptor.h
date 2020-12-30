@@ -6,7 +6,7 @@
 
 #include "srcs/utils/uncopyable.h"
 #include "srcs/net/types.h"
-#include "srcs/net/server/socket_address.h"
+#include "srcs/net/address/socket_address.h"
 #include "srcs/net/fd_handler/fd_handler.h"
 
 namespace net {

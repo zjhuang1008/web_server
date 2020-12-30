@@ -4,7 +4,7 @@
 
 #include "srcs/net/thread/event_loop.h"
 #include "srcs/net/sys_wrapper/sysw.h"
-#include "srcs/net/server/socket_address.h"
+#include "srcs/net/address/socket_address.h"
 #include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/net/channel/channel.h"
 

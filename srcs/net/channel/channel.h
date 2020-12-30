@@ -36,7 +36,7 @@ public:
   // called when error happened
   void setErrorCallback(Callback cb) { errorCallback_ = std::move(cb); }
 
-  int fd() { return fd_handler_; }
+  FDHandler fd() { return fd_handler_; }
   size_t events_type() { return events_type_; }
   size_t revents_type() { return revents_type_; }
   void set_revents_type(size_t revents_type) { revents_type_ = revents_type; }
