@@ -18,11 +18,6 @@ Channel::Channel(EventLoopPtr loop, FDHandler fd_handler) :
 // Channel::~Channel() {
 // }
 
-// void Channel::defaultRegisterCallback() {
-//   loop_->addChannelInPoller(shared_from_this());
-//   LOG(DEBUG) << "register callback finished.";
-// }
-
 void Channel::updateToPoller() {
   loop_->updateChannelInPoller(shared_from_this());
 }
