@@ -33,6 +33,8 @@ private:
 
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
+  
+  BufferReadingFunction bufferReadingFunction_;
 };
 
 } // namespace net

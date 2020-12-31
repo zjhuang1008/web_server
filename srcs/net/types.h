@@ -10,8 +10,10 @@ namespace net {
   class EventLoopThread;
   class Poller;
   class TCPConnection;
+  class Buffer;
 
   using Callback = std::function<void()>;
+  using BufferReadingFunction = std::function<void(Buffer&)>;
 
   using ChannelPtr = std::shared_ptr<Channel>;
   using EventLoopPtr = std::shared_ptr<EventLoop>;

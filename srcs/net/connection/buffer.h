@@ -1,6 +1,7 @@
 #include "srcs/utils/uncopyable.h"
 
 #include <vector>
+#include <sys/types.h>
 
 namespace net {
 
@@ -25,11 +26,13 @@ public:
   size_t readableSize() { return writer_index_ - reader_index_; }
   size_t writableSize() { return buffer_.size() - writer_index_; }
 
-  void writerForward(size_t len) { writer_index_ += len; }
-  void readerForward(size_t len) { reader_index_ += len; }
+  // void writerForward(size_t len) { writer_index_ += len; }
+  // void readerForward(size_t len) { reader_index_ += len; }
   
-  void read(size_t len);
-  void write(FDHandler fd, int &saved_errno);
+  bool read(size_t len, char *&buf);
+  void readAll();
+
+  ssize_t write(FDHandler fd, int &saved_errno);
 
   void append(char *tmp_buf, size_t len);
 private:

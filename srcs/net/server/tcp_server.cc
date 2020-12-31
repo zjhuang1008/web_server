@@ -8,11 +8,20 @@
 #include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/net/thread/event_loop.h"
 
+namespace net {
+
+static void defaultBufferReadingFunction(Buffer& buffer) {
+  buffer.readAll();
+}
+
+} // namespace net
+
 using namespace net;
 
 TCPServer::TCPServer(size_t num_io_threads, SocketAddress host_address)
   : io_thread_pool_(num_io_threads),
-    acceptor_(std::move(host_address)) {
+    acceptor_(std::move(host_address)),
+    bufferReadingFunction_(net::defaultBufferReadingFunction) {
   acceptor_.setListenCallback(std::bind(&TCPServer::listenCallback, this));
 }
 
