@@ -32,7 +32,7 @@ public:
 
   void addChannelInPoller(ChannelPtr ch);
   void updateChannelInPoller(const ChannelPtr& ch);
-  // void removeChannel(const ChannelPtr& ch);
+  void removeChannelInPoller(const ChannelPtr& ch);
 
   bool isInLoopThread() { return thread_id_ == std::this_thread::get_id(); }
 

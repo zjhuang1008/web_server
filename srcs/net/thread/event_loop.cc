@@ -51,9 +51,9 @@ void EventLoop::updateChannelInPoller(const ChannelPtr& ch) {
   poller_->updateChannel(ch);
 }
 
-// void EventLoop::removeChannel(const ChannelPtr& ch) {
-//   poller_->removeChannel(ch);
-// }
+void EventLoop::removeChannelInPoller(const ChannelPtr& ch) {
+  poller_->removeChannel(ch);
+}
 
 void EventLoop::startLoop() {
   {

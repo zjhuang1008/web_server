@@ -1,6 +1,7 @@
 #include "srcs/utils/uncopyable.h"
 
 #include <vector>
+#include <string>
 #include <sys/types.h>
 
 namespace net {
@@ -29,7 +30,7 @@ public:
   // void writerForward(size_t len) { writer_index_ += len; }
   // void readerForward(size_t len) { reader_index_ += len; }
   
-  bool read(size_t len, char *&buf);
+  std::string read(size_t len, bool &success);
   void readAll();
 
   ssize_t write(FDHandler fd, int &saved_errno);

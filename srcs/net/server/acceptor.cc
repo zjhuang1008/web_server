@@ -10,8 +10,8 @@
 
 using namespace net;
 
-Acceptor::Acceptor(SocketAddress host_address, int domain, int type, int protocol) 
-  : loop_(std::make_shared<EventLoop>()),
+Acceptor::Acceptor(EventLoopPtr loop, SocketAddress host_address, int domain, int type, int protocol) 
+  : loop_(std::move(loop)),
     sockfd_(sysw::socket(domain, type, protocol)),
     sockch_(std::make_shared<Channel>(loop_, sockfd_)),
     host_addr_(std::move(host_address)) {

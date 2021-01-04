@@ -1,5 +1,7 @@
 #include "srcs/net/connection/buffer.h"
 
+#include <string>
+
 #include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/net/sys_wrapper/sysw.h"
 
@@ -7,19 +9,20 @@ using namespace net;
 
 static constexpr size_t kTmpBuffSize = 65536;  // 64KB
 
-bool Buffer::read(size_t len, char *&buf) {
+std::string Buffer::read(size_t len, bool &success) {
   size_t readable_sz = readableSize();
   if (readable_sz < len) {
-    return false;
+    success = false;
+    return std::string();
   } else if (readable_sz == len) {
-    buf = readerIter();
+    std::string str = std::string(readerIter(), len);
     reader_index_ = kPrependSize;
     writer_index_ = kPrependSize;
-    return true;
+    return str;
   } else {
-    buf = readerIter();
+    std::string str = std::string(readerIter(), len);
     reader_index_ += len;
-    return true;
+    return str;
   }
 }
 

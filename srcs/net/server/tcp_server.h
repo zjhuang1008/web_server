@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <string>
 
 #include "srcs/utils/uncopyable.h"
 #include "srcs/net/address/socket_address.h"
@@ -14,25 +15,27 @@ namespace net {
 
 class TCPServer : private Uncopyable {
 public:
-  TCPServer(size_t num_io_threads, SocketAddress host_address);
+  TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_address);
   ~TCPServer();
 
   void start();
 
   void setConnectionReadCallback(Callback cb) { connection_cb_.read = cb; }
   void setConnectionWriteCallback(Callback cb) { connection_cb_.write = cb; }
-  void setConnectionCloseCallback(Callback cb) { connection_cb_.close = cb; }
 private:
   void listenCallback();
+
+  void connectionCloseCallback(const TCPConnectionPtr &conn);
 
   struct connectionCallbacks {
     Callback read;
     Callback write;
-    Callback close;
   } connection_cb_;
 
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
+
+  std::unordered_map<std::string, TCPConnectionPtr> connections_;
   
   BufferReadingFunction bufferReadingFunction_;
 };

@@ -19,7 +19,8 @@ public:
   using EventLoopPtr = std::shared_ptr<EventLoop>;
   using ChannelPtr = std::shared_ptr<Channel>;
 
-  Acceptor(SocketAddress socket_address, 
+  Acceptor(EventLoopPtr loop,
+           SocketAddress socket_address, 
            int domain=AF_INET, 
            int type=SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
            int protocol=IPPROTO_TCP);
