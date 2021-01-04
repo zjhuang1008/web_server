@@ -16,5 +16,5 @@ EventLoopThread::EventLoopThread() : loop_(std::make_shared<EventLoop>()) {
 // }
 
 void EventLoopThread::startLoop() {
-  thread_ = std::thread(std::bind(&EventLoop::startLoop, loop_));
+  thread_ = std::thread([this](){ loop_->startLoop(); });
 }

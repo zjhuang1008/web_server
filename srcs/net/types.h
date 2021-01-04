@@ -13,8 +13,7 @@ namespace net {
   class Buffer;
 
   using Callback = std::function<void()>;
-  using BufferReadingFunction = std::function<void(Buffer&)>;
-
+  
   using ChannelPtr = std::shared_ptr<Channel>;
   using EventLoopPtr = std::shared_ptr<EventLoop>;
   using EventLoopThreadPtr = std::shared_ptr<EventLoopThread>;

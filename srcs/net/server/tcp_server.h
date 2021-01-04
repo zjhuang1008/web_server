@@ -9,6 +9,7 @@
 #include "srcs/net/address/socket_address.h"
 #include "srcs/net/thread/event_loop_thread_pool.h"
 #include "srcs/net/server/acceptor.h"
+#include "srcs/net/connection/tcp_connection.h"
 #include "srcs/net/types.h"
 
 namespace net {
@@ -20,24 +21,17 @@ public:
 
   void start();
 
-  void setConnectionReadCallback(Callback cb) { connection_cb_.read = cb; }
-  void setConnectionWriteCallback(Callback cb) { connection_cb_.write = cb; }
+  void setConnectionReadCallback(TCPConnection::ReadCallback cb) { readCallback_ = std::move(cb); }
+  void setConnectionWriteCallback(Callback cb) {  }
 private:
-  void listenCallback();
-
-  void connectionCloseCallback(const TCPConnectionPtr &conn);
-
-  struct connectionCallbacks {
-    Callback read;
-    Callback write;
-  } connection_cb_;
-
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
+  TCPConnection::ReadCallback readCallback_;
 
-  std::unordered_map<std::string, TCPConnectionPtr> connections_;
+  void listenCallback();
+  void connectionCloseCallback(const TCPConnectionPtr &conn);
   
-  BufferReadingFunction bufferReadingFunction_;
+  std::unordered_map<std::string, TCPConnectionPtr> connections_;
 };
 
 } // namespace net

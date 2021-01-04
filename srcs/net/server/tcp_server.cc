@@ -21,8 +21,8 @@ using namespace net;
 TCPServer::TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_address)
   : io_thread_pool_(num_io_threads),
     acceptor_(std::move(loop), std::move(host_address)),
-    bufferReadingFunction_(net::defaultBufferReadingFunction) {
-  acceptor_.setListenCallback(std::bind(&TCPServer::listenCallback, this));
+    readCallback_(net::defaultBufferReadingFunction) {
+  acceptor_.setListenCallback([this](){ this->listenCallback(); });
 }
 
 void TCPServer::start() {
@@ -38,8 +38,8 @@ void TCPServer::listenCallback() {
 
   TCPConnectionPtr conn = std::make_shared<TCPConnection>(
     io_loop, 
-    accept_fd,
-    conn_name
+    std::move(accept_fd),
+    std::move(conn_name)
   );
 
   conn->setCloseCallback([this](const TCPConnectionPtr& curr_conn) {

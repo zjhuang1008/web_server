@@ -15,6 +15,7 @@ class TCPConnection : private Uncopyable,
                       public std::enable_shared_from_this<TCPConnection> {
 public:
   using CloseCallback = std::function<void(const TCPConnectionPtr&)>;
+  using ReadCallback = std::function<void(Buffer&)>;
 
   TCPConnection(EventLoopPtr io_loop, FDHandler accept_fd, std::string name);
 
@@ -22,23 +23,22 @@ public:
 
   void handleCreate();
   void handleClose();
-  void handleRead();
   void handleError();
+  void handleRead();
   
   void setCloseCallback(CloseCallback cb) { closeCallback_ = std::move(cb); }
-
-  void setBufferReadingFunction_(BufferReadingFunction fn) { 
-    bufferReadingFunction_ = std::move(fn); 
-  }
+  void setReadCallback(ReadCallback cb) { readCallback_ = std::move(cb); }
 private:
   EventLoopPtr io_loop_;
   ChannelPtr channel_;
-  Buffer buffer_;
   std::string name_;
 
-  BufferReadingFunction bufferReadingFunction_;
+  Buffer in_buffer_;
+  Buffer out_buffer_;
 
   CloseCallback closeCallback_;
+  ReadCallback readCallback_;
+
 };
 
 } // namespace net

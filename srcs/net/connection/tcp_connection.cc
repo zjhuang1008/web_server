@@ -4,30 +4,17 @@
 
 #include "srcs/net/channel/channel.h"
 #include "srcs/net/thread/event_loop.h"
+#include "srcs/logger/logger.h"
 
 using namespace net;
 
 TCPConnection::TCPConnection(EventLoopPtr io_loop, FDHandler accept_fd, std::string name)
-  : io_loop_(std::move(io_loop)),
-    channel_(std::make_shared<Channel>(io_loop, accept_fd)),
-    buffer_(),
+  : io_loop_(io_loop),
+    channel_(std::make_shared<Channel>(io_loop, std::move(accept_fd))),
     name_(std::move(name)) {
-  channel_->setReadCallback(std::bind(&TCPConnection::handleRead, this));
-  channel_->setCloseCallback(std::bind(&TCPConnection::handleClose, this));
-  channel_->setErrorCallback(std::bind(&TCPConnection::handleError, this));
-}
-
-void TCPConnection::handleRead() {
-  int saved_errno = 0;
-  ssize_t n = buffer_.write(channel_->fd(), saved_errno);
-
-  if (n > 0) {
-    bufferReadingFunction_(buffer_);
-  } else if (n == 0) {
-    handleClose();
-  } else {
-    handleError();
-  }
+  channel_->setReadCallback([this]() { this->handleRead(); });
+  channel_->setCloseCallback([this]() { this->handleClose(); });
+  channel_->setErrorCallback([this]() { this->handleError(); });
 }
 
 void TCPConnection::handleCreate() {
@@ -36,11 +23,25 @@ void TCPConnection::handleCreate() {
 }
 
 void TCPConnection::handleClose() {
+  LOG(DEBUG) << "connection " << name_ << "closed";
   io_loop_->removeChannelInPoller(channel_);
 
   closeCallback_(shared_from_this());
 }
 
 void TCPConnection::handleError() {
-  
+  handleClose();
+}
+
+void TCPConnection::handleRead() {
+  ssize_t n = in_buffer_.write(channel_->fd());
+
+  if (n > 0) {
+    readCallback_(in_buffer_);
+  } else if (n == 0) {
+    handleClose();
+  } else {
+    LOGSYS(ERROR) << "error happened in connection " << name_;
+    handleError();
+  }
 }

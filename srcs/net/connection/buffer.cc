@@ -31,7 +31,7 @@ void Buffer::readAll() {
   writer_index_ = kPrependSize;
 }
 
-ssize_t Buffer::write(FDHandler fd, int &saved_errno) {
+ssize_t Buffer::write(FDHandler fd) {
   char tmp_buf[kTmpBuffSize];
 
   size_t writable_sz = writableSize();
@@ -43,7 +43,7 @@ ssize_t Buffer::write(FDHandler fd, int &saved_errno) {
   
   const ssize_t n = sysw::readv(fd, vec, 2);
   if (n < 0) {
-    saved_errno = errno;
+    
   } else {
     size_t n_p = static_cast<size_t>(n);
     if (n_p <= writable_sz) {

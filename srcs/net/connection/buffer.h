@@ -33,7 +33,7 @@ public:
   std::string read(size_t len, bool &success);
   void readAll();
 
-  ssize_t write(FDHandler fd, int &saved_errno);
+  ssize_t write(FDHandler fd);
 
   void append(char *tmp_buf, size_t len);
 private:
