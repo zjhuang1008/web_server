@@ -30,6 +30,7 @@ set(CXX_FLAGS
     -Wshadow
     -Wwrite-strings
     -Wpessimizing-move
+    -Wredundant-move
 )
 
 add_compile_options(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON)

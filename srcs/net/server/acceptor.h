@@ -11,14 +11,8 @@
 
 namespace net {
 
-class Channel;
-class EventLoop;
-
 class Acceptor : private Uncopyable {
 public:
-  using EventLoopPtr = std::shared_ptr<EventLoop>;
-  using ChannelPtr = std::shared_ptr<Channel>;
-
   Acceptor(EventLoopPtr loop,
            SocketAddress socket_address, 
            int domain=AF_INET, 

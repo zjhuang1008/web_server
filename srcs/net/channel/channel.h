@@ -10,8 +10,6 @@
 
 namespace net {
 
-class EventLoop;
-
 // will be shared by a poller and a holder.
 class Channel : public std::enable_shared_from_this<Channel>, private Uncopyable {
 public:

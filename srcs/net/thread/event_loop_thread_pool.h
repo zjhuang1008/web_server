@@ -9,10 +9,6 @@
 
 namespace net {
 
-class Channel;
-class EventLoop;
-class EventLoopThread;
-
 class EventLoopThreadPool : private Uncopyable {
 public:
   EventLoopThreadPool(size_t num_threads);

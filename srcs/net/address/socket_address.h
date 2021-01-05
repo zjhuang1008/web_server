@@ -26,7 +26,6 @@ private:
     struct sockaddr_in addr_;
     struct sockaddr_in6 addr6_;
   };
-  
 };
 
 } // namespace net

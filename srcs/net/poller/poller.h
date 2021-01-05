@@ -10,8 +10,6 @@
 
 namespace net {
 
-class Channel;
-
 class Poller : private Uncopyable {
 public:
   Poller();

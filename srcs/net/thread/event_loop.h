@@ -12,9 +12,6 @@
 
 namespace net {
 
-class Channel;
-class Poller;
-
 class EventLoop : public std::enable_shared_from_this<EventLoop>, private Uncopyable {
 public:
   EventLoop();

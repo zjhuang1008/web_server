@@ -11,8 +11,6 @@
 
 namespace net {
 
-class Channel;
-
 class EpollPoller : public Poller {
 public:
   using EventList = std::vector<struct epoll_event>;
