@@ -29,6 +29,7 @@ set(CXX_FLAGS
     -Wpointer-arith
     -Wshadow
     -Wwrite-strings
+    -Wpessimizing-move
 )
 
 add_compile_options(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON)
