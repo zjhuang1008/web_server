@@ -10,19 +10,19 @@
 
 using namespace net;
 
-Acceptor::Acceptor(EventLoopPtr loop, SocketAddress host_address, int domain, int type, int protocol) 
+Acceptor::Acceptor(EventLoopPtr loop, int domain, int type, int protocol) 
   : loop_(std::move(loop)),
     sockfd_(sysw::socket(domain, type, protocol)),
-    sockch_(std::make_shared<Channel>(loop_, sockfd_)),
-    host_addr_(std::move(host_address)) {
-  sysw::bind(sockfd_, host_addr_.sockaddr_ptr(), host_addr_.socklen());  
+    sockch_(std::make_shared<Channel>(loop_, sockfd_)) {
+  
 }
 
-void Acceptor::setListenCallback(Callback cb) {
+void Acceptor::setReadCallback(Callback cb) {
   sockch_->setReadCallback(std::move(cb));
 }
 
-void Acceptor::listen() {
+void Acceptor::listen(const SocketAddress& host_addr) {
+  sysw::bind(sockfd_, host_addr.sockaddr_ptr(), host_addr.socklen());  
   sysw::listen(sockfd_, SOMAXCONN);
 
   loop_->runInLoop([this](){

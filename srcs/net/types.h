@@ -12,6 +12,10 @@ namespace net {
   class TCPConnection;
   class Buffer;
   class SocketAddress;
+  
+  class HTTPServer;
+  class HTTPResponse;
+  class HTTPRequest;
 
   using Callback = std::function<void()>;
 

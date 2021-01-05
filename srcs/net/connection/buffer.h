@@ -1,3 +1,6 @@
+#ifndef BUFFER_H
+#define BUFFER_H
+
 #include "srcs/utils/uncopyable.h"
 
 #include <vector>
@@ -43,3 +46,5 @@ private:
 };
 
 }; // namespace
+
+#endif // BUFFER_H

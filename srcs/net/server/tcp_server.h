@@ -6,7 +6,7 @@
 #include <string>
 
 #include "srcs/utils/uncopyable.h"
-// #include "srcs/net/address/socket_address.h"
+#include "srcs/net/address/socket_address.h"
 #include "srcs/net/thread/event_loop_thread_pool.h"
 #include "srcs/net/server/acceptor.h"
 #include "srcs/net/connection/tcp_connection.h"
@@ -16,22 +16,27 @@ namespace net {
 
 class TCPServer : private Uncopyable {
 public:
-  TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_address);
+  TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_addr);
   ~TCPServer();
 
   void start();
 
+  void setConnectionCreateCallback(TCPConnection::CreateCallback cb) { createCallback_ = std::move(cb); }
   void setConnectionReadCallback(TCPConnection::ReadCallback cb) { readCallback_ = std::move(cb); }
-  void setConnectionWriteCallback(Callback cb) {  }
 private:
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
-  TCPConnection::ReadCallback readCallback_;
+  SocketAddress host_addr_;
 
-  void listenCallback();
+  void acceptorReadCallback();
+
+  TCPConnection::CreateCallback createCallback_;
   void connectionCloseCallback(const TCPConnectionPtr &conn);
+  TCPConnection::ReadCallback readCallback_;
   
   std::unordered_map<std::string, TCPConnectionPtr> connections_;
+
+  int nextConnID_;
 };
 
 } // namespace net

@@ -1,3 +1,6 @@
+#ifndef CHANNEL_H
+#define CHANNEL_H
+
 #include <memory>
 #include <functional>
 #include <utility>
@@ -53,3 +56,5 @@ private:
 };
 
 } // namespace net
+
+#endif // CHANNEL_H

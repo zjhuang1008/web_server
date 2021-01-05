@@ -14,23 +14,18 @@ namespace net {
 class Acceptor : private Uncopyable {
 public:
   Acceptor(EventLoopPtr loop,
-           SocketAddress socket_address, 
            int domain=AF_INET, 
            int type=SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
            int protocol=IPPROTO_TCP);
-  void setListenCallback(Callback cb);
+  void setReadCallback(Callback cb);
 
-  void listen();
-  FDHandler accept(SocketAddress& peer_addr);
-
+  void listen(const SocketAddress& host_addr);
+  FDHandler accept(SocketAddress& peer_addr);  
   // int sockfd() { return sockfd_; }
 private:
   EventLoopPtr loop_;
   FDHandler sockfd_;
   ChannelPtr sockch_;
-  SocketAddress host_addr_;
-
-  
 };
 
 } // namespace net

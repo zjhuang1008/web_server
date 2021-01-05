@@ -53,18 +53,18 @@ SocketAddress::SocketAddress(uint16_t port, bool loopbackOnly, bool ipv6) {
   }
 }
 
-std::string SocketAddress::toIP() {
+std::string SocketAddress::toIP() const {
   char buf[g_buf_size];
 
   writeIPToBuffer(buf, sockaddr_ptr());
   return std::string(buf);
 }
 
-uint16_t SocketAddress::toPort() {
+uint16_t SocketAddress::toPort() const {
   return ntohs(addr_.sin_port);
 }
 
-std::string SocketAddress::toIPPort() {
+std::string SocketAddress::toIPPort() const {
   char buf[g_buf_size];
 
   writeIPToBuffer(buf, sockaddr_ptr());
