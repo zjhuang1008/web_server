@@ -1,5 +1,7 @@
 #include "srcs/net/server/http/http_server.h"
 
+#include <boost/any.hpp>
+
 #include "srcs/net/connection/buffer.h"
 #include "srcs/net/server/http/http_request.h"
 #include "srcs/net/server/http/http_context.h"
@@ -21,5 +23,8 @@ void HTTPServer::connectionOnCreate(const TCPConnectionPtr& conn) {
 }
 
 void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& conn) {
+  HTTPContext* http_context = boost::any_cast<HTTPContext>(conn->getMutableContext());
+  
+  http_context->parseRequest(in_buffer);
   
 }

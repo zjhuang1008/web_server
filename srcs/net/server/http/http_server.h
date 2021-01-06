@@ -24,9 +24,6 @@ private:
   void connectionOnCreate(const TCPConnectionPtr& conn);
   void connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& conn);
   // std::unordered_map<std::string, >
-  
-  // HTTPRequest request_;
-  // HTTPResponse response_;
 };
 
 } // namespace net

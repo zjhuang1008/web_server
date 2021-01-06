@@ -9,6 +9,8 @@ using namespace net;
 
 static constexpr size_t kTmpBuffSize = 65536;  // 64KB
 
+const char* Buffer::kCRLF = "\r\n";
+
 std::string Buffer::read(size_t len, bool &success) {
   size_t readable_sz = readableSize();
   if (readable_sz < len) {
@@ -24,11 +26,6 @@ std::string Buffer::read(size_t len, bool &success) {
     reader_index_ += len;
     return str;
   }
-}
-
-void Buffer::readAll() {
-  reader_index_ = kPrependSize;
-  writer_index_ = kPrependSize;
 }
 
 ssize_t Buffer::write(FDHandler fd) {
@@ -60,13 +57,16 @@ ssize_t Buffer::write(FDHandler fd) {
 void Buffer::append(char *tmp_buf, size_t len) {
   size_t reuseable_sz = reader_index_ - kPrependSize;
   if (reuseable_sz >= len) {
+    // copy forward to reserve space to write
     std::copy(readerIter(), writerIter(), prependIter());
     writer_index_ = kPrependSize + readableSize();
     reader_index_ = kPrependSize;
   } else {
+    // resize buffer
     buffer_.resize(writer_index_ + len);
   }
 
+  // do append
   std::copy(tmp_buf, tmp_buf+len, writerIter()); 
   writer_index_ += len;
 }
