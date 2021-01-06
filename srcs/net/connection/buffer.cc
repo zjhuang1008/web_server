@@ -28,7 +28,7 @@ std::string Buffer::read(size_t len, bool &success) {
   }
 }
 
-ssize_t Buffer::write(FDHandler fd) {
+ssize_t Buffer::write(const FDHandler& fd) {
   char tmp_buf[kTmpBuffSize];
 
   size_t writable_sz = writableSize();
@@ -42,7 +42,7 @@ ssize_t Buffer::write(FDHandler fd) {
   if (n < 0) {
     
   } else {
-    size_t n_p = static_cast<size_t>(n);
+    auto n_p = static_cast<size_t>(n);
     if (n_p <= writable_sz) {
       writer_index_ += n_p;
     } else {

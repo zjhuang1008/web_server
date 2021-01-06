@@ -2,6 +2,7 @@
 #define BUFFER_H
 
 #include "srcs/utils/uncopyable.h"
+#include "srcs/net/types.h"
 
 #include <vector>
 #include <string>
@@ -17,7 +18,7 @@ public:
   static constexpr size_t kPrependSize = 8;
   static constexpr size_t kInitialSize = 1024;
 
-  Buffer(size_t initial_size = kInitialSize) 
+  explicit Buffer(size_t initial_size = kInitialSize)
     : buffer_(kPrependSize + kInitialSize),
       reader_index_(kPrependSize),
       writer_index_(kPrependSize) {}
@@ -46,7 +47,7 @@ public:
     writer_index_ = kPrependSize;
   }
 
-  ssize_t write(FDHandler fd);
+  ssize_t write(const FDHandler& fd);
 
   void append(char *tmp_buf, size_t len);
 

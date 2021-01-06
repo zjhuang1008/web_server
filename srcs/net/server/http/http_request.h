@@ -16,14 +16,14 @@ public:
     kGet, kPost, kHead, kPut, kDelete, kInvalid
   };
   enum class Version {
-    kUnknown, kHttp10, kHttp11
+    kHttp10, kHttp11, kUnknown
   };
   HTTPRequest() : method_(Method::kInvalid), version_(Version::kUnknown) {};
 
   bool setMethod(const char* start, const char* end);
-  void setVersion(const char* start, const char* end);
-  void setPath(const char* start, const char* end);
-  void setQuery(const char* start, const char* end);
+  bool setVersion(const char* start, const char* end);
+  bool setPath(const char* start, const char* end) { path_.assign(start, end); }
+  bool setQuery(const char* start, const char* end) { query_.assign(start, end); }
 private:
   Method method_;
   Version version_;
@@ -34,6 +34,8 @@ private:
   std::string body_;
 
   static const std::vector<std::string> kMethods;
+  static const std::string kHTTPPrefix;
+  static const std::vector<std::string> kHTTPVersions;
 };
 
 } // namespace net

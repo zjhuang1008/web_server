@@ -17,12 +17,15 @@ public:
   };
   HTTPContext() : state_(HTTPRequestParseState::kExpectRequestLine) {};
 
+  bool parseFinished() { return state_ == HTTPRequestParseState::kGotAll; }
+  const HTTPRequest& request() { return request_; }
+
   bool parseRequest(Buffer& buff);
   bool parseOneLine(const char* start, const char* end);
   
   bool parseRequestLine(const char* start, const char* end);
   bool parseHeader(const char* start, const char* end);
-  bool parseBody(const char* start, const char* end);
+//  bool parseBody(const char* start, const char* end);
 private:
   HTTPRequestParseState state_;
   HTTPRequest request_;

@@ -13,14 +13,14 @@ namespace net {
 
 class HTTPServer : private Uncopyable {
 public:
-  using HttpCallback = std::function<HTTPResponse(HTTPRequest)>;
+  using ResponseCallback = std::function<void(const HTTPRequest&, HTTPResponse&)>;
   HTTPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_address);
 
-  void setHttpCallback(HttpCallback );
-
+  void setResponseCallback(ResponseCallback cb) { responseCallback_ = std::move(cb); };
 private:
   TCPServer server_;
-  
+  ResponseCallback responseCallback_;
+
   void connectionOnCreate(const TCPConnectionPtr& conn);
   void connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& conn);
   // std::unordered_map<std::string, >

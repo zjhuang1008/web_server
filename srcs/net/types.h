@@ -5,6 +5,8 @@
 #include <memory>
 
 namespace net {
+  using std::size_t;
+
   class Channel;
   class EventLoop;
   class EventLoopThread;
