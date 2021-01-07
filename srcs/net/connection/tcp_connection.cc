@@ -1,6 +1,7 @@
 #include "srcs/net/connection/tcp_connection.h"
 
 #include <utility>
+#include <cassert>
 
 #include "srcs/net/channel/channel.h"
 #include "srcs/net/thread/event_loop.h"
@@ -8,15 +9,15 @@
 
 using namespace net;
 
-TCPConnection::TCPConnection(EventLoopPtr io_loop, 
+TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
                              FDHandler accept_fd, 
                              const SocketAddress& host_addr,
                              const SocketAddress& peer_addr,
                              std::string name)
   : io_loop_(io_loop),
     channel_(std::make_shared<Channel>(io_loop, std::move(accept_fd))),
-    host_addr_(std::move(host_addr)),
-    peer_addr_(std::move(peer_addr)),
+    host_addr_(host_addr),
+    peer_addr_(peer_addr),
     name_(std::move(name)) {
   channel_->setReadCallback([this]() { this->handleRead(); });
   channel_->setCloseCallback([this]() { this->handleClose(); });
@@ -52,4 +53,19 @@ void TCPConnection::handleRead() {
     LOGSYS(ERROR) << "error happened in connection " << name_;
     handleError();
   }
+}
+
+void TCPConnection::send(Buffer &buffer) {
+  assertInLoop();
+  // TODO
+
+}
+
+void TCPConnection::shutdown() {
+  assertInLoop();
+
+}
+
+void TCPConnection::assertInLoop() {
+  assert(io_loop_->isInLoopThread());
 }

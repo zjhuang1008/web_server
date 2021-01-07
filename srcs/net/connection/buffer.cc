@@ -11,22 +11,26 @@ static constexpr size_t kTmpBuffSize = 65536;  // 64KB
 
 const char* Buffer::kCRLF = "\r\n";
 
-std::string Buffer::read(size_t len, bool &success) {
+bool Buffer::read(size_t len) {
   size_t readable_sz = readableSize();
   if (readable_sz < len) {
-    success = false;
-    return std::string();
+    return false;
   } else if (readable_sz == len) {
-    std::string str = std::string(readerIter(), len);
-    reader_index_ = kPrependSize;
-    writer_index_ = kPrependSize;
-    return str;
+    return readAll();
   } else {
-    std::string str = std::string(readerIter(), len);
     reader_index_ += len;
-    return str;
+    return true;
   }
 }
+
+bool Buffer::readUntil(const char *iter) {
+  if (iter >= readerIter() && iter <= writerIter()) {
+    return read(static_cast<size_t>(iter - readerIter()));
+  } else {
+    return false;
+  }
+}
+
 
 ssize_t Buffer::write(const FDHandler& fd) {
   char tmp_buf[kTmpBuffSize];
@@ -54,7 +58,7 @@ ssize_t Buffer::write(const FDHandler& fd) {
   return n;
 }
 
-void Buffer::append(char *tmp_buf, size_t len) {
+void Buffer::append(const char *tmp_buf, size_t len) {
   size_t reuseable_sz = reader_index_ - kPrependSize;
   if (reuseable_sz >= len) {
     // copy forward to reserve space to write

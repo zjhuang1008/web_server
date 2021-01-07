@@ -11,8 +11,11 @@ bool HTTPContext::parseRequest(Buffer& buff) {
   for (; state_ != HTTPRequestParseState::kGotAll;) {
     const char* crlf_iter = buff.findCRLF();
     if (crlf_iter != buff.writerIter()) {
-      if (!parseOneLine(buff.readerIter(), crlf_iter))
+      if (parseOneLine(buff.readerIter(), crlf_iter)) {
+        buff.readUntil(crlf_iter + 2);
+      } else {
         return false;
+      }
     } else {
       // received data is not enough to parse
       break;
@@ -87,9 +90,10 @@ bool HTTPContext::parseRequestLine(const char* start, const char* end) {
 }
 
 bool HTTPContext::parseHeader(const char* start, const char* end) {
-  const char* split = std::find(start, end, ':');
+  const char* colon = std::find(start, end, ':');
+  if (colon == end) return false;
 
-  return true;
+  return request_.setHeader(start, colon, end);
 }
 
 //bool HTTPContext::parseBody(const char* start, const char* end) {

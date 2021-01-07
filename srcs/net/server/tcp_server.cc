@@ -27,7 +27,7 @@ using namespace net;
 TCPServer::TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_addr)
   : io_thread_pool_(num_io_threads),
     acceptor_(std::move(loop)),
-    host_addr_(std::move(host_addr)),
+    host_addr_(host_addr),
     createCallback_(net::defaultCreateCallback),
     readCallback_(net::defaultReadCallback) {
   acceptor_.setReadCallback([this](){ this->acceptorReadCallback(); });

@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <sys/types.h>
 
+#include <string.h>
+
 namespace net {
 
 class FDHandler;
@@ -41,15 +43,19 @@ public:
   // void writerForward(size_t len) { writer_index_ += len; }
   // void readerForward(size_t len) { reader_index_ += len; }
   
-  std::string read(size_t len, bool &success);
-  void readAll() {
+  bool read(size_t len);
+  bool readUntil(const char* iter);
+  bool readAll() {
     reader_index_ = kPrependSize;
     writer_index_ = kPrependSize;
+    return true;
   }
 
   ssize_t write(const FDHandler& fd);
 
-  void append(char *tmp_buf, size_t len);
+  void append(const char *tmp_buf, size_t len);
+  void append(const char *str) { append(str, strlen(str)); }
+  void append(const std::string& str) { append(str.c_str(), str.size()); }
 
   const char* findCRLF() {
     return std::search(readerIter(), writerIter(), kCRLF, kCRLF+2);

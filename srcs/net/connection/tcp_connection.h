@@ -21,7 +21,7 @@ public:
   using CloseCallback = std::function<void(const TCPConnectionPtr&)>;
   using ReadCallback = std::function<void(Buffer&, const TCPConnectionPtr&)>;
 
-  TCPConnection(EventLoopPtr io_loop, 
+  TCPConnection(const EventLoopPtr& io_loop,
                 FDHandler accept_fd, 
                 const SocketAddress& host_addr,
                 const SocketAddress& peer_addr,
@@ -44,6 +44,11 @@ public:
   void setContext(const boost::any& context) { context_ = context; }
   const boost::any& getContext() { return context_; }
   boost::any* getMutableContext() { return &context_; }
+
+//  void send(const std::string& message);
+  void send(Buffer& buffer);
+
+  void shutdown();
 private:
   EventLoopPtr io_loop_;
   ChannelPtr channel_;
@@ -59,6 +64,8 @@ private:
   ReadCallback readCallback_;
 
   boost::any context_;
+
+  inline void assertInLoop();
 };
 
 } // namespace net

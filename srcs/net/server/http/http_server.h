@@ -16,14 +16,18 @@ public:
   using ResponseCallback = std::function<void(const HTTPRequest&, HTTPResponse&)>;
   HTTPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_address);
 
-  void setResponseCallback(ResponseCallback cb) { responseCallback_ = std::move(cb); };
+//  void setResponseCallback(ResponseCallback cb) { responseCallback_ = std::move(cb); };
+  void setResponseCallback(std::string path, ResponseCallback cb) {
+    responseCallbacks_[std::move(path)] = std::move(cb);
+  }
 private:
   TCPServer server_;
-  ResponseCallback responseCallback_;
+
+//  ResponseCallback responseCallback_;
+  std::unordered_map<std::string, ResponseCallback> responseCallbacks_;
 
   void connectionOnCreate(const TCPConnectionPtr& conn);
   void connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& conn);
-  // std::unordered_map<std::string, >
 };
 
 } // namespace net
