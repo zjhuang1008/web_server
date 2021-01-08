@@ -1,7 +1,7 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include "srcs/utils/uncopyable.h"
+#include "srcs/utils/copyable.h"
 #include "srcs/net/types.h"
 
 #include <vector>
@@ -15,7 +15,7 @@ namespace net {
 
 class FDHandler;
 
-class Buffer : private Uncopyable {
+class Buffer : private Copyable {
 public:
   static constexpr size_t kPrependSize = 8;
   static constexpr size_t kInitialSize = 1024;
@@ -37,8 +37,8 @@ public:
   char* prependIter() { return beginIter() + kPrependSize; }
   const char* prependIter() const { return beginIter() + kPrependSize; }
 
-  size_t readableSize() { return writer_index_ - reader_index_; }
-  size_t writableSize() { return buffer_.size() - writer_index_; }
+  size_t readableSize() const { return writer_index_ - reader_index_; }
+  size_t writableSize() const { return buffer_.size() - writer_index_; }
 
   // void writerForward(size_t len) { writer_index_ += len; }
   // void readerForward(size_t len) { reader_index_ += len; }
@@ -51,7 +51,8 @@ public:
     return true;
   }
 
-  ssize_t write(const FDHandler& fd);
+  ssize_t writeFromFD(int fd);
+  ssize_t readToFD(int fd);
 
   void append(const char *tmp_buf, size_t len);
   void append(const char *str) { append(str, strlen(str)); }

@@ -36,6 +36,7 @@ public:
   void handleClose();
   void handleError();
   void handleRead();
+  void handleWrite();
   
   void setCreateCallback(CreateCallback cb) { createCallback_ = std::move(cb); }
   void setCloseCallback(CloseCallback cb) { closeCallback_ = std::move(cb); }
@@ -45,8 +46,8 @@ public:
   const boost::any& getContext() { return context_; }
   boost::any* getMutableContext() { return &context_; }
 
-//  void send(const std::string& message);
-  void send(Buffer& buffer);
+  void send(const Buffer& buffer);
+//  void sendInLoop(Buffer buffer);
 
   void shutdown();
 private:

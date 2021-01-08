@@ -33,7 +33,7 @@ int EpollPoller::poll(int timeout_ms) {
 
   for (int i = 0; i < num_events; ++ i) {
     ChannelPtr ch = fd2channels_[events_[i].data.fd];
-    LOG(DEBUG) << Fmt("get ch with fd=%d event", int(ch->fd()));
+    LOG(DEBUG) << Fmt("get ch with fd=%d event", ch->fd());
     ch->set_revents_type(static_cast<size_t>(events_[i].events));
     active_channels_.push_back(ch);
   }

@@ -7,6 +7,14 @@
 #include "srcs/net/thread/event_loop.h"
 #include "srcs/logger/logger.h"
 
+namespace net {
+
+const size_t Channel::kReadEvent = POLLIN | POLLPRI;
+const size_t Channel::kWriteEvent = POLLOUT;
+const size_t Channel::kNoneEvent = 0;
+
+} // namespace net
+
 using namespace net;
 
 Channel::Channel(EventLoopPtr loop, FDHandler fd_handler) : 
@@ -18,9 +26,9 @@ Channel::Channel(EventLoopPtr loop, FDHandler fd_handler) :
 // Channel::~Channel() {
 // }
 
-void Channel::updateToPoller() {
-  loop_->updateChannelInPoller(shared_from_this());
-}
+//void Channel::update() {
+//  loop_->updateChannelInPoller(shared_from_this());
+//}
 
 void Channel::handleEvent() {
   if (revents_type_ & (POLLIN | POLLRDHUP | POLLPRI)) {

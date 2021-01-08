@@ -34,10 +34,14 @@ void Acceptor::listen(const SocketAddress& host_addr) {
 FDHandler Acceptor::accept(SocketAddress& peer_addr) {
   struct sockaddr_in6 peer_sockaddr;
   socklen_t peer_sockaddr_len = static_cast<socklen_t>(sizeof(peer_sockaddr));
-  FDHandler accept_fd = FDHandler(sysw::accept4(sockfd_, 
-                                  reinterpret_cast<struct sockaddr*>(&peer_sockaddr), 
-                                  &peer_sockaddr_len, 
-                                  SOCK_NONBLOCK | SOCK_CLOEXEC));
+  FDHandler accept_fd = FDHandler(
+  sysw::accept4(
+        sockfd_,
+        reinterpret_cast<struct sockaddr*>(&peer_sockaddr),
+        &peer_sockaddr_len,
+        SOCK_NONBLOCK | SOCK_CLOEXEC
+      )
+  );
   peer_addr.set_sockaddr_in6(peer_sockaddr);
 
   return accept_fd;

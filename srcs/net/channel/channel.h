@@ -5,8 +5,6 @@
 #include <functional>
 #include <utility>
 
-#include <sys/poll.h>
-
 #include "srcs/net/types.h"
 #include "srcs/utils/uncopyable.h"
 #include "srcs/net/fd_handler/fd_handler.h"
@@ -19,12 +17,16 @@ public:
   Channel(EventLoopPtr loop, FDHandler fd_handler);
   ~Channel() = default;
     
-  void enableReading() { events_type_ |= POLLIN; };
-  void disableReading() { events_type_ &= ~POLLIN; };
-  void enableWriting() { events_type_ |= POLLOUT; };
-  void disableWriting() { events_type_ &= ~POLLOUT; };
+  void enableReading() { events_type_ |= kReadEvent; }
+  void disableReading() { events_type_ &= ~kReadEvent; }
+  void enableWriting() { events_type_ |= kWriteEvent; }
+  void disableWriting() { events_type_ &= ~kWriteEvent; }
+  void disableAll() { events_type_ = kNoneEvent; }
 
-  void updateToPoller();
+  bool isWriting() const { return events_type_ & kWriteEvent; }
+  bool isReading() const { return events_type_ & kReadEvent; }
+
+//  void update();
 
   void handleEvent();
   
@@ -37,7 +39,7 @@ public:
   // called when error happened
   void setErrorCallback(Callback cb) { errorCallback_ = std::move(cb); }
 
-  FDHandler fd() { return fd_handler_; }
+  int fd() { return fd_handler_; }
   size_t events_type() { return events_type_; }
   size_t revents_type() { return revents_type_; }
   void set_revents_type(size_t revents_type) { revents_type_ = revents_type; }
@@ -53,6 +55,10 @@ private:
   Callback writeCallback_;
   Callback closeCallback_;
   Callback errorCallback_;
+
+  static const size_t kReadEvent;
+  static const size_t kWriteEvent;
+  static const size_t kNoneEvent;
 };
 
 } // namespace net

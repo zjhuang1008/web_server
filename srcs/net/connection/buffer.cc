@@ -32,7 +32,7 @@ bool Buffer::readUntil(const char *iter) {
 }
 
 
-ssize_t Buffer::write(const FDHandler& fd) {
+ssize_t Buffer::writeFromFD(int fd) {
   char tmp_buf[kTmpBuffSize];
 
   size_t writable_sz = writableSize();
@@ -56,6 +56,18 @@ ssize_t Buffer::write(const FDHandler& fd) {
   }
   
   return n;
+}
+
+
+ssize_t Buffer::readToFD(int fd) {
+  const ssize_t n = sysw::write(fd, readerIter(), readableSize());
+  if (n < 0) {
+
+  } else {
+    auto n_p = static_cast<size_t>(n);
+    reader_index_ += n_p;
+  }
+  return 0;
 }
 
 void Buffer::append(const char *tmp_buf, size_t len) {

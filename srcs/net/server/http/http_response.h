@@ -42,7 +42,7 @@ public:
   template<typename T>
   void setBody(T&& body) { body_ = std::forward<T>(body); }
 
-  void toBuffer(Buffer& out_buffer);
+  Buffer toBuffer();
 private:
   HttpVersion version_;
   HttpStatusCode status_code_;

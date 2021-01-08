@@ -70,9 +70,7 @@ void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& con
   }
 
   if (to_send) {
-    Buffer buffer;
-    response.toBuffer(buffer);
-    conn->send(buffer);
+    conn->send(response.toBuffer());
 
     if (response.getCloseConnection()) {
       conn->shutdown();

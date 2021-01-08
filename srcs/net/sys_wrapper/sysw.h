@@ -27,6 +27,7 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 int listen(int sockfd, int backlog);
 int accept4(int sockfd, struct sockaddr *addr, socklen_t *addrlen, int flags = 0);
 int connect(int clientfd, const struct sockaddr *addr, socklen_t addrlen);
+int shutdown(int fd, int how);
 
 ssize_t readv(int fd, const struct iovec *iov, int iovcnt);
 

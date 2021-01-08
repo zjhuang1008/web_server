@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/eventfd.h>
-// #include <sys/epoll.h>
 // #include <sys/socket.h>
+// #include <sys/epoll.h>
 // #include <sys/types.h>
 
 #include "srcs/logger/logger.h"
@@ -97,4 +97,10 @@ ssize_t sysw::readv(int fd, const struct iovec *iov, int iovcnt) {
   ssize_t n = ::readv(fd, iov, iovcnt);
   if (n < 0) sysw::log_error("readv");
   return n;
+}
+
+int sysw::shutdown(int fd, int how) {
+  int ok = ::shutdown(fd, how);
+  if (ok < 0) sysw::log_error("shutdown");
+  return 0;
 }

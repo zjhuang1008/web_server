@@ -13,6 +13,7 @@ public:
   SocketAddress() = default;
   SocketAddress(uint16_t port, bool loopbackOnly=false, bool ipv6=false);
 
+  // TODO: use sockaddr_storage
   void set_sockaddr_in6(const struct sockaddr_in6& addr6) { addr6_ = addr6; }
 
   std::string toIP() const;

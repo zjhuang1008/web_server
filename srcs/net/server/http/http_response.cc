@@ -6,7 +6,8 @@ using namespace net;
 
 static constexpr int buf_size = 64;
 
-void HTTPResponse::toBuffer(Buffer &out_buffer) {
+Buffer HTTPResponse::toBuffer() {
+  Buffer out_buffer;
   char buf[buf_size];
   snprintf(
     buf, buf_size, "%s%s %d %s\r\n",
@@ -34,4 +35,6 @@ void HTTPResponse::toBuffer(Buffer &out_buffer) {
 
   out_buffer.append("\r\n");
   out_buffer.append(body_);
+
+  return out_buffer;
 }
