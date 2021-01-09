@@ -59,10 +59,12 @@ void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& con
       responseCallbacks_[path](request, response);
 
       // decide whether to close the connection
-      const std::string& conn_value = request.getHeader("Connection");
-      bool to_close = conn_value == "close" ||
-          (request.getVersion() == HttpVersion::kHttp10 && conn_value == "Keep-Alive");
-      response.setCloseConnection(to_close);
+      if (request.hasHeader("Connection")) {
+        const std::string& conn_value = request.getHeader("Connection");
+        bool to_close = conn_value == "close" ||
+                        (request.getVersion() == HttpVersion::kHttp10 && conn_value == "Keep-Alive");
+        response.setCloseConnection(to_close);
+      }
     } else {
       // not found
       net::notFoundHttpCallback(request, response);

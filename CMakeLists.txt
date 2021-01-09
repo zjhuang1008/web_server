@@ -12,6 +12,7 @@ endif()
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
+message(STATUS "build type " ${CMAKE_BUILD_TYPE})
 
 include(CTest)
 enable_testing()

@@ -44,17 +44,17 @@ ssize_t Buffer::writeFromFD(int fd) {
   
   const ssize_t n = sysw::readv(fd, vec, 2);
   if (n < 0) {
-    
-  } else {
-    auto n_p = static_cast<size_t>(n);
-    if (n_p <= writable_sz) {
-      writer_index_ += n_p;
-    } else {
-      writer_index_ += writable_sz;
-      append(tmp_buf, n_p - writable_sz);
-    }
+    return n;
   }
-  
+
+  auto n_p = static_cast<size_t>(n);
+  if (n_p <= writable_sz) {
+    writer_index_ += n_p;
+  } else {
+    writer_index_ += writable_sz;
+    append(tmp_buf, n_p - writable_sz);
+  }
+
   return n;
 }
 
@@ -62,11 +62,11 @@ ssize_t Buffer::writeFromFD(int fd) {
 ssize_t Buffer::readToFD(int fd) {
   const ssize_t n = sysw::write(fd, readerIter(), readableSize());
   if (n < 0) {
-
-  } else {
-    auto n_p = static_cast<size_t>(n);
-    reader_index_ += n_p;
+    return n;
   }
+
+  reader_index_ += static_cast<size_t>(n);
+
   return 0;
 }
 

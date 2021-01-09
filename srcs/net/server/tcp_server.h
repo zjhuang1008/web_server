@@ -17,7 +17,7 @@ namespace net {
 class TCPServer : private Uncopyable {
 public:
   TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_addr);
-  ~TCPServer();
+//  ~TCPServer();
 
   void start();
 

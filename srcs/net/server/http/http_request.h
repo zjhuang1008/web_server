@@ -36,6 +36,9 @@ public:
   HttpVersion getVersion() const { return version_; }
 
   template<typename T>
+  bool hasHeader(T&& key) const { return headers_.count(std::forward<T>(key)); }
+
+  template<typename T>
   const std::string& getHeader(T&& key) const { return headers_.at(std::forward<T>(key)); }
 
   const std::string& getPath() const { return path_; }

@@ -17,9 +17,11 @@ public:
   HTTPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_address);
 
 //  void setResponseCallback(ResponseCallback cb) { responseCallback_ = std::move(cb); };
-  void setResponseCallback(std::string path, ResponseCallback cb) {
-    responseCallbacks_[std::move(path)] = std::move(cb);
+  void setResponseCallback(const std::string& path, ResponseCallback cb) {
+    responseCallbacks_[path] = std::move(cb);
   }
+
+  void start() { server_.start(); }
 private:
   TCPServer server_;
 

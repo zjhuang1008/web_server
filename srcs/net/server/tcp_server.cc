@@ -29,7 +29,8 @@ TCPServer::TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress hos
     acceptor_(std::move(loop)),
     host_addr_(host_addr),
     createCallback_(net::defaultCreateCallback),
-    readCallback_(net::defaultReadCallback) {
+    readCallback_(net::defaultReadCallback),
+    nextConnID_(0) {
   acceptor_.setReadCallback([this](){ this->acceptorReadCallback(); });
 }
 
@@ -44,7 +45,8 @@ void TCPServer::acceptorReadCallback() {
   FDHandler accept_fd = acceptor_.accept(peer_addr);
 
   char buff[64];
-  snprintf(buff, sizeof buff, "%s-#%d", host_addr_.toIPPort().c_str(), nextConnID_);
+  snprintf(buff, sizeof buff, "%s->%s-#%d",
+    peer_addr.toIPPort().c_str(), host_addr_.toIPPort().c_str(), nextConnID_);
   ++ nextConnID_;
 
   TCPConnectionPtr conn = std::make_shared<TCPConnection>(

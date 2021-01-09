@@ -7,6 +7,7 @@
 #include "srcs/net/address/socket_address.h"
 #include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/net/channel/channel.h"
+#include "srcs/logger/logger.h"
 
 using namespace net;
 
@@ -24,10 +25,12 @@ void Acceptor::setReadCallback(Callback cb) {
 void Acceptor::listen(const SocketAddress& host_addr) {
   sysw::bind(sockfd_, host_addr.sockaddr_ptr(), host_addr.socklen());  
   sysw::listen(sockfd_, SOMAXCONN);
+  std::string host_name = host_addr.toIPPort();
 
-  loop_->runInLoop([this](){
+  loop_->runInLoop([this, host_name](){
     sockch_->enableReading();
     loop_->addChannelInPoller(sockch_);
+    LOG(INFO) << "acceptor start to listen " << host_name;
   });
 }
 

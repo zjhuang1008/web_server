@@ -20,7 +20,8 @@ TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
     channel_(std::make_shared<Channel>(io_loop, std::move(accept_fd))),
     host_addr_(host_addr),
     peer_addr_(peer_addr),
-    name_(std::move(name)) {
+    name_(std::move(name)),
+    status_(Status::kConnecting) {
   channel_->setCloseCallback([this]() { this->handleClose(); });
   channel_->setErrorCallback([this]() { this->handleError(); });
   channel_->setReadCallback([this]() { this->handleRead(); });
@@ -28,15 +29,18 @@ TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
 }
 
 void TCPConnection::handleCreate() {
+  LOG(DEBUG) << "connection " << name_ << " created";
   channel_->enableReading();
   io_loop_->addChannelInPoller(channel_);
+  status_ = Status::kConnected;
 
   createCallback_(shared_from_this());
 }
 
 void TCPConnection::handleClose() {
-  LOG(DEBUG) << "connection " << name_ << "closed";
+  LOG(DEBUG) << "connection " << name_ << " closed";
   io_loop_->removeChannelInPoller(channel_);
+  status_ = Status::kDisconnected;
 
   closeCallback_(shared_from_this());
 }
@@ -53,20 +57,42 @@ void TCPConnection::handleRead() {
   } else if (n == 0) {
     handleClose();
   } else {
-    LOGSYS(ERROR) << "error happened in connection " << name_;
+    LOGSYS(ERROR) << "error happened when reading from connection " << name_;
     handleError();
   }
 }
 
 void TCPConnection::handleWrite() {
   ssize_t n = out_buffer_.readToFD(channel_->fd());
-  // TODO
+
+  if (n < 0) {
+    LOGSYS(ERROR) << "error happened when writing to connection " << name_;
+    handleError();
+    return;
+  }
+
+  if (out_buffer_.readableSize() == 0) {
+    // disable writing to avoid busy loop
+    channel_->disableWriting();
+    io_loop_->updateChannelInPoller(channel_);
+
+    if (status_ == Status::kDisconnecting) {
+      shutdown();
+    }
+
+    // TODO: writeCompleteCallback
+//    if (writeCompleteCallback_)
+//      writeCompleteCallback_();
+  }
 }
 
 void TCPConnection::send(const Buffer& buffer) {
   assertInLoop();
 
   out_buffer_.append(buffer.readerIter(), buffer.readableSize());
+
+  // TODO: highWaterMarkCallback
+
   if (!channel_->isWriting()) {
     channel_->enableWriting();
     io_loop_->updateChannelInPoller(channel_);
@@ -78,8 +104,11 @@ void TCPConnection::send(const Buffer& buffer) {
 
 void TCPConnection::shutdown() {
   assertInLoop();
+  status_ = Status::kDisconnecting;
 
-  sysw::shutdown(channel_->fd(), SHUT_WR);
+  if (!channel_->isWriting()) {
+    sysw::shutdown(channel_->fd(), SHUT_WR);
+  }
 }
 
 void TCPConnection::assertInLoop() {

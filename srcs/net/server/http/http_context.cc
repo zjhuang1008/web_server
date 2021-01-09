@@ -48,7 +48,9 @@ bool HTTPContext::parseOneLine(const char* start, const char* end) {
 //    if (!parseBody(start, end))
 //      return false;
     break;
+  case HTTPRequestParseState::kGotAll:
   default:
+    state_ = HTTPRequestParseState::kExpectRequestLine;
     // state_ = HTTPRequestParseState::kGotAll
     // LOG(WARN) << "enter state " << static_cast<int>(state_);
     return true;

@@ -42,6 +42,11 @@ public:
   template<typename T>
   void setBody(T&& body) { body_ = std::forward<T>(body); }
 
+  template<typename T1, typename T2>
+  void setHeader(T1&& key, T2&& value) {
+    headers_.emplace(std::forward<T1>(key), std::forward<T2>(value));
+  }
+
   Buffer toBuffer();
 private:
   HttpVersion version_;

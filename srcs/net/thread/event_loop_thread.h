@@ -13,7 +13,7 @@ namespace net {
 class EventLoopThread : private Uncopyable {
 public:
   EventLoopThread();
-  ~EventLoopThread() = default;
+//  ~EventLoopThread() = default;
   
   void startLoop();
   EventLoopPtr loop() { return loop_; };

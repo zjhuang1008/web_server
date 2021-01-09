@@ -46,6 +46,6 @@ bool HTTPRequest::setHeader(const char *start, const char *colon, const char *en
 
   headers_.emplace(std::move(key), std::move(value));
 
-  return false;
+  return true;
 }
 

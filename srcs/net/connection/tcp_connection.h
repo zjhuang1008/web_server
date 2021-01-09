@@ -17,6 +17,10 @@ namespace net {
 class TCPConnection : private Uncopyable,
                       public std::enable_shared_from_this<TCPConnection> {
 public:
+  enum class Status {
+    kConnecting, kConnected, kDisconnecting, kDisconnected
+  };
+
   using CreateCallback = std::function<void(const TCPConnectionPtr&)>;
   using CloseCallback = std::function<void(const TCPConnectionPtr&)>;
   using ReadCallback = std::function<void(Buffer&, const TCPConnectionPtr&)>;
@@ -56,6 +60,7 @@ private:
   SocketAddress host_addr_;
   SocketAddress peer_addr_;
   std::string name_;
+  Status status_;
 
   Buffer in_buffer_;
   Buffer out_buffer_;
@@ -63,6 +68,8 @@ private:
   CreateCallback createCallback_;
   CloseCallback closeCallback_;
   ReadCallback readCallback_;
+
+//  Callback writeCompleteCallback_;
 
   boost::any context_;
 
