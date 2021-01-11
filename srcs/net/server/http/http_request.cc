@@ -38,9 +38,9 @@ bool HTTPRequest::setHeader(const char *start, const char *colon, const char *en
 
   ++ colon;
   // remove prefix space
-  for (; isspace(*colon); ++ colon);
+  for (; *colon == ' '; ++ colon);
   // remove postfix space
-  for (; isspace(*end); -- end);
+  for (; *end == ' '; -- end);
 
   std::string value(colon, end);
 

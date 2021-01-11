@@ -35,7 +35,10 @@ bool HTTPContext::parseOneLine(const char* start, const char* end) {
   case HTTPRequestParseState::kExpectHeader:
     if (start == end) {
       // meet empty line
-      state_ = HTTPRequestParseState::kExpectBody;
+      state_ = request_.expectBody() ?
+        HTTPRequestParseState::kExpectBody :
+        HTTPRequestParseState::kGotAll;
+
       return true;
     }
     if (!parseHeader(start, end)) 
@@ -47,14 +50,13 @@ bool HTTPContext::parseOneLine(const char* start, const char* end) {
     return true;
 //    if (!parseBody(start, end))
 //      return false;
-    break;
+//    break;
   case HTTPRequestParseState::kGotAll:
   default:
-    state_ = HTTPRequestParseState::kExpectRequestLine;
+//    state_ = HTTPRequestParseState::kExpectRequestLine;
     // state_ = HTTPRequestParseState::kGotAll
     // LOG(WARN) << "enter state " << static_cast<int>(state_);
     return true;
-    break;
   }
 
   return true;

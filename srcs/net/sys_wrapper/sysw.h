@@ -31,6 +31,8 @@ int shutdown(int fd, int how);
 
 ssize_t readv(int fd, const struct iovec *iov, int iovcnt);
 
+int setsockopt(int sockfd, int level, int optname, const void* optval, socklen_t optlen);
+
 }
 
 #endif // SYSW_H

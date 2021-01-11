@@ -15,7 +15,8 @@ Acceptor::Acceptor(EventLoopPtr loop, int domain, int type, int protocol)
   : loop_(std::move(loop)),
     sockfd_(sysw::socket(domain, type, protocol)),
     sockch_(std::make_shared<Channel>(loop_, sockfd_)) {
-  
+  // TODO make it user-define
+  setReuseAddress();
 }
 
 void Acceptor::setReadCallback(Callback cb) {
@@ -48,4 +49,9 @@ FDHandler Acceptor::accept(SocketAddress& peer_addr) {
   peer_addr.set_sockaddr_in6(peer_sockaddr);
 
   return accept_fd;
+}
+
+void Acceptor::setReuseAddress() {
+  int optval;
+  sysw::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
 }

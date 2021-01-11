@@ -20,7 +20,8 @@ public:
   void setReadCallback(Callback cb);
 
   void listen(const SocketAddress& host_addr);
-  FDHandler accept(SocketAddress& peer_addr);  
+  FDHandler accept(SocketAddress& peer_addr);
+  void setReuseAddress();
   // int sockfd() { return sockfd_; }
 private:
   EventLoopPtr loop_;

@@ -3,9 +3,11 @@
 #include <boost/any.hpp>
 
 #include "srcs/net/connection/buffer.h"
+#include "srcs/net/connection/tcp_connection.h"
 #include "srcs/net/server/http/http_request.h"
 #include "srcs/net/server/http/http_context.h"
 #include "srcs/net/server/http/http_response.h"
+#include "srcs/logger/logger.h"
 
 namespace net {
 
@@ -40,6 +42,7 @@ void HTTPServer::connectionOnCreate(const TCPConnectionPtr& conn) {
 void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& conn) {
   HTTPResponse response;
   HTTPContext* http_context = boost::any_cast<HTTPContext>(conn->getMutableContext());
+
   const HTTPRequest& request = http_context->request();
 
   bool to_send = false;
@@ -51,9 +54,12 @@ void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& con
   }
 
   if (http_context->parseFinished()) {
+    http_context->resetState();
     to_send = true;
 
     const std::string& path = request.getPath();
+    LOG(DEBUG) << "connection " << conn->name() << " receive " << path;
+
     if (responseCallbacks_.count(path)) {
       // request can be handled
       responseCallbacks_[path](request, response);

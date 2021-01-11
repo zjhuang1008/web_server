@@ -102,5 +102,11 @@ ssize_t sysw::readv(int fd, const struct iovec *iov, int iovcnt) {
 int sysw::shutdown(int fd, int how) {
   int ok = ::shutdown(fd, how);
   if (ok < 0) sysw::log_error("shutdown");
-  return 0;
+  return ok;
+}
+
+int sysw::setsockopt(int sockfd, int level, int optname, const void* optval, socklen_t optlen) {
+  int ok = ::setsockopt(sockfd, level, optname, optval, optlen);
+  if (ok < 0) sysw::log_error("setsockopt");
+  return ok;
 }

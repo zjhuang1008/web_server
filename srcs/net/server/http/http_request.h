@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cassert>
 
 #include "srcs/net/types.h"
 #include "srcs/utils/copyable.h"
@@ -42,6 +43,11 @@ public:
   const std::string& getHeader(T&& key) const { return headers_.at(std::forward<T>(key)); }
 
   const std::string& getPath() const { return path_; }
+
+  bool expectBody() {
+    assert(method_ != HttpMethod::kInvalid);
+    return method_ == HttpMethod::kPost;
+  }
 private:
   HttpMethod method_;
   HttpVersion version_;

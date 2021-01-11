@@ -10,7 +10,7 @@
 using namespace net;
 
 int main(int argc, char* argv[]) {
-  size_t num_io_threads = 4;
+  size_t num_io_threads = 1;
   uint16_t port = 45678;
 
   EventLoopPtr loop = std::make_shared<EventLoop>();
@@ -19,9 +19,9 @@ int main(int argc, char* argv[]) {
   HTTPServer server(loop, num_io_threads, address);
 
   server.setResponseCallback("/hello", [](const HTTPRequest& req, HTTPResponse& resp) {
-      resp.setStatusCode(HttpStatusCode::k200Ok);
-      resp.setHeader("Content-type", "text/plain");
-      resp.setBody("Hello World");
+    resp.setStatusCode(HttpStatusCode::k200Ok);
+    resp.setHeader("Content-type", "text/plain");
+    resp.setBody("Hello World\r\n");
   });
 
   server.start();

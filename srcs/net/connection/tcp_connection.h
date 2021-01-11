@@ -31,7 +31,7 @@ public:
                 const SocketAddress& peer_addr,
                 std::string name);
 
-  std::string name() { return name_; }
+  const std::string& name() { return name_; }
 
   const SocketAddress& host_addr() const { return host_addr_; }
   const SocketAddress& peer_addr() const { return peer_addr_; }

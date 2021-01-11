@@ -72,7 +72,7 @@ void TCPServer::acceptorReadCallback() {
       [this](TCPConnectionPtr curr_conn) {
         curr_conn->handleCreate();
         connections_[curr_conn->name()] = std::move(curr_conn);
-      }, 
+      },
       std::move(conn)
     )
   );

@@ -17,6 +17,7 @@ public:
   };
   HTTPContext() : state_(HTTPRequestParseState::kExpectRequestLine) {};
 
+  void resetState() { state_ = HTTPRequestParseState::kExpectRequestLine; }
   bool parseFinished() { return state_ == HTTPRequestParseState::kGotAll; }
   const HTTPRequest& request() { return request_; }
 

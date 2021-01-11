@@ -29,11 +29,11 @@ int EpollPoller::poll(int timeout_ms) {
   
   if (num_events < 0) return num_events;
   
-  LOG(DEBUG) << Fmt("get %d events", num_events);
+//  LOG(DEBUG) << Fmt("get %d events", num_events);
 
-  for (int i = 0; i < num_events; ++ i) {
+  for (size_t i = 0; i < static_cast<size_t>(num_events); ++ i) {
     ChannelPtr ch = fd2channels_[events_[i].data.fd];
-    LOG(DEBUG) << Fmt("get ch with fd=%d event", ch->fd());
+//    LOG(DEBUG) << Fmt("get ch with fd=%d event", ch->fd());
     ch->set_revents_type(static_cast<size_t>(events_[i].events));
     active_channels_.push_back(ch);
   }

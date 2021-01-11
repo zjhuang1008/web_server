@@ -26,6 +26,7 @@ TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
   channel_->setErrorCallback([this]() { this->handleError(); });
   channel_->setReadCallback([this]() { this->handleRead(); });
   channel_->setWriteCallback([this]() { this->handleWrite(); });
+  LOG(DEBUG) << "connection " << name_ << " receive accept fd: " << channel_->fd();
 }
 
 void TCPConnection::handleCreate() {
@@ -50,6 +51,7 @@ void TCPConnection::handleError() {
 }
 
 void TCPConnection::handleRead() {
+  LOG(DEBUG) << "connection " << name_ << " read accept fd: " << channel_->fd();
   ssize_t n = in_buffer_.writeFromFD(channel_->fd());
 
   if (n > 0) {
@@ -63,6 +65,7 @@ void TCPConnection::handleRead() {
 }
 
 void TCPConnection::handleWrite() {
+  LOG(DEBUG) << "connection " << name_ << " write accept fd: " << channel_->fd();
   ssize_t n = out_buffer_.readToFD(channel_->fd());
 
   if (n < 0) {
@@ -107,6 +110,7 @@ void TCPConnection::shutdown() {
   status_ = Status::kDisconnecting;
 
   if (!channel_->isWriting()) {
+    LOG(DEBUG) << "connection " << name_ << " shutdown";
     sysw::shutdown(channel_->fd(), SHUT_WR);
   }
 }
