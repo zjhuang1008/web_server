@@ -12,12 +12,12 @@
 using namespace net;
 
 TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
-                             FDHandler accept_fd, 
+                             FDHandler socket_fd,
                              const SocketAddress& host_addr,
                              const SocketAddress& peer_addr,
                              std::string name)
   : io_loop_(io_loop),
-    channel_(std::make_shared<Channel>(io_loop, std::move(accept_fd))),
+    channel_(std::make_shared<Channel>(io_loop, std::move(socket_fd))),
     host_addr_(host_addr),
     peer_addr_(peer_addr),
     name_(std::move(name)),
@@ -26,7 +26,7 @@ TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
   channel_->setErrorCallback([this]() { this->handleError(); });
   channel_->setReadCallback([this]() { this->handleRead(); });
   channel_->setWriteCallback([this]() { this->handleWrite(); });
-  LOG(DEBUG) << "connection " << name_ << " receive accept fd: " << channel_->fd();
+  LOG(DEBUG) << "connection " << name_ << " receive socket fd: " << channel_->fd();
 }
 
 void TCPConnection::handleCreate() {
@@ -51,7 +51,7 @@ void TCPConnection::handleError() {
 }
 
 void TCPConnection::handleRead() {
-  LOG(DEBUG) << "connection " << name_ << " read accept fd: " << channel_->fd();
+  LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
   ssize_t n = in_buffer_.writeFromFD(channel_->fd());
 
   if (n > 0) {
@@ -65,7 +65,7 @@ void TCPConnection::handleRead() {
 }
 
 void TCPConnection::handleWrite() {
-  LOG(DEBUG) << "connection " << name_ << " write accept fd: " << channel_->fd();
+  LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
   ssize_t n = out_buffer_.readToFD(channel_->fd());
 
   if (n < 0) {

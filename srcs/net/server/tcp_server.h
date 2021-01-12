@@ -16,7 +16,7 @@ namespace net {
 
 class TCPServer : private Uncopyable {
 public:
-  TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_addr);
+  TCPServer(const EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_addr);
 //  ~TCPServer();
 
   void start();
@@ -24,6 +24,7 @@ public:
   void setConnectionCreateCallback(TCPConnection::CreateCallback cb) { createCallback_ = std::move(cb); }
   void setConnectionReadCallback(TCPConnection::ReadCallback cb) { readCallback_ = std::move(cb); }
 private:
+  EventLoopPtr loop_;
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
   SocketAddress host_addr_;
@@ -36,7 +37,7 @@ private:
   
   std::unordered_map<std::string, TCPConnectionPtr> connections_;
 
-  int nextConnID_;
+  int next_conn_id_;
 };
 
 } // namespace net

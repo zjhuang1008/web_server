@@ -26,7 +26,7 @@ public:
   using ReadCallback = std::function<void(Buffer&, const TCPConnectionPtr&)>;
 
   TCPConnection(const EventLoopPtr& io_loop,
-                FDHandler accept_fd, 
+                FDHandler socket_fd,
                 const SocketAddress& host_addr,
                 const SocketAddress& peer_addr,
                 std::string name);

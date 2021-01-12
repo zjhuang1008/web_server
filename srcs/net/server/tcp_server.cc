@@ -24,13 +24,15 @@ static void defaultReadCallback(Buffer& buffer, const TCPConnectionPtr& conn) {
 
 using namespace net;
 
-TCPServer::TCPServer(EventLoopPtr loop, size_t num_io_threads, SocketAddress host_addr)
-  : io_thread_pool_(num_io_threads),
-    acceptor_(std::move(loop)),
+TCPServer::TCPServer(const EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_addr)
+  : loop_(loop),
+    io_thread_pool_(num_io_threads),
+    acceptor_(loop),
     host_addr_(host_addr),
     createCallback_(net::defaultCreateCallback),
     readCallback_(net::defaultReadCallback),
-    nextConnID_(0) {
+    connections_(),
+    next_conn_id_(0) {
   acceptor_.setReadCallback([this](){ this->acceptorReadCallback(); });
 }
 
@@ -46,16 +48,19 @@ void TCPServer::acceptorReadCallback() {
 
   char buff[64];
   snprintf(buff, sizeof buff, "%s->%s-#%d",
-    peer_addr.toIPPort().c_str(), host_addr_.toIPPort().c_str(), nextConnID_);
-  ++ nextConnID_;
+           peer_addr.toIPPort().c_str(), host_addr_.toIPPort().c_str(), next_conn_id_);
+  std::string name(buff);
 
-  TCPConnectionPtr conn = std::make_shared<TCPConnection>(
-    io_loop, 
+  connections_[name] = std::make_shared<TCPConnection>(
+    io_loop,
     std::move(accept_fd),
     host_addr_,
     peer_addr,
-    std::string(buff)
+    name
   );
+  ++ next_conn_id_;
+
+  const TCPConnectionPtr& conn = connections_[name];
 
   conn->setCreateCallback([this](const TCPConnectionPtr& curr_conn) {
     this->createCallback_(curr_conn);
@@ -67,17 +72,13 @@ void TCPServer::acceptorReadCallback() {
     this->readCallback_(buffer, curr_conn);
   });
   
-  io_loop->runInLoop(
-    std::bind(
-      [this](TCPConnectionPtr curr_conn) {
-        curr_conn->handleCreate();
-        connections_[curr_conn->name()] = std::move(curr_conn);
-      },
-      std::move(conn)
-    )
-  );
+  io_loop->runInLoop([&conn]() {
+    conn->handleCreate();
+  });
 }
 
 void TCPServer::connectionCloseCallback(const TCPConnectionPtr &conn) {
-  connections_.erase(conn->name());
+  loop_->runInLoop([this, conn](){
+    connections_.erase(conn->name());
+  });
 }
