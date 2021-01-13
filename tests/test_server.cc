@@ -10,7 +10,7 @@
 using namespace net;
 
 int main(int argc, char* argv[]) {
-  size_t num_io_threads = 1;
+  size_t num_io_threads = 4;
   uint16_t port = 45678;
 
   EventLoopPtr loop = std::make_shared<EventLoop>();

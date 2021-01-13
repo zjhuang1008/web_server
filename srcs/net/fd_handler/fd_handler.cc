@@ -8,7 +8,6 @@ using namespace net;
 
 struct FDDeleter {
   void operator()(int* fd_ptr) const {
-    LOG(DEBUG) << "fd " << *fd_ptr << " closed";
     ::close(*fd_ptr);
     delete fd_ptr;
   }

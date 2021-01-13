@@ -46,6 +46,10 @@ FDHandler Acceptor::accept(SocketAddress& peer_addr) {
         SOCK_NONBLOCK | SOCK_CLOEXEC
       )
   );
+  if (accept_fd < 0) {
+    return accept_fd;
+  }
+
   peer_addr.set_sockaddr_in6(peer_sockaddr);
 
   return accept_fd;

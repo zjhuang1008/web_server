@@ -41,10 +41,16 @@ void TCPServer::start() {
 }
 
 void TCPServer::acceptorReadCallback() {
-  EventLoopPtr io_loop = io_thread_pool_.getNextLoop();
-  
   SocketAddress peer_addr;
   FDHandler accept_fd = acceptor_.accept(peer_addr);
+  if (accept_fd < 0) {
+    LOG(ERROR) << "accept failed, #active connections = "
+               << connections_.size()
+               << ", refuse connection";
+    return;
+  }
+
+  EventLoopPtr io_loop = io_thread_pool_.getNextLoop();
 
   char buff[64];
   snprintf(buff, sizeof buff, "%s->%s-#%d",

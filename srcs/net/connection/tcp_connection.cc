@@ -31,7 +31,7 @@ TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
 
 void TCPConnection::handleCreate() {
   assert(status_ == Status::kConnecting);
-  LOG(DEBUG) << "connection " << name_ << " created";
+//  LOG(DEBUG) << "connection " << name_ << " created";
   channel_->enableReading();
   io_loop_->addChannelInPoller(channel_);
   status_ = Status::kConnected;
@@ -57,7 +57,7 @@ void TCPConnection::handleError() {
 
 void TCPConnection::handleRead() {
   if (status_ == Status::kConnected || status_ == Status::kDisconnecting) {
-    LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
+//    LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
     ssize_t n = in_buffer_.writeFromFD(channel_->fd());
 
     if (n > 0) {
@@ -75,7 +75,7 @@ void TCPConnection::handleWrite() {
   if (status_ != Status::kConnected)
     return;
 
-  LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
+//  LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
   ssize_t n = out_buffer_.readToFD(channel_->fd());
 
   if (n < 0) {
