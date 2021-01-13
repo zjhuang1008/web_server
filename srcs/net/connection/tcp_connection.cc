@@ -30,6 +30,7 @@ TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
 }
 
 void TCPConnection::handleCreate() {
+  assert(status_ == Status::kConnecting);
   LOG(DEBUG) << "connection " << name_ << " created";
   channel_->enableReading();
   io_loop_->addChannelInPoller(channel_);
@@ -39,11 +40,15 @@ void TCPConnection::handleCreate() {
 }
 
 void TCPConnection::handleClose() {
-  LOG(DEBUG) << "connection " << name_ << " closed";
-  io_loop_->removeChannelInPoller(channel_);
-  status_ = Status::kDisconnected;
+  if (status_ != Status::kDisconnected) {
+    LOG(DEBUG) << "connection " << name_ << " closed";
+    io_loop_->removeChannelInPoller(channel_);
+    // because closeCallback_ will let another thread to do the close task
+    // set status_ to kDisconnected to prevent this function being level-triggered again
+    status_ = Status::kDisconnected;
 
-  closeCallback_(shared_from_this());
+    closeCallback_(shared_from_this());
+  }
 }
 
 void TCPConnection::handleError() {
@@ -51,20 +56,25 @@ void TCPConnection::handleError() {
 }
 
 void TCPConnection::handleRead() {
-  LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
-  ssize_t n = in_buffer_.writeFromFD(channel_->fd());
+  if (status_ == Status::kConnected || status_ == Status::kDisconnecting) {
+    LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
+    ssize_t n = in_buffer_.writeFromFD(channel_->fd());
 
-  if (n > 0) {
-    readCallback_(in_buffer_, shared_from_this());
-  } else if (n == 0) {
-    handleClose();
-  } else {
-    LOGSYS(ERROR) << "error happened when reading from connection " << name_;
-    handleError();
+    if (n > 0) {
+      readCallback_(in_buffer_, shared_from_this());
+    } else if (n == 0) {
+      handleClose();
+    } else {
+      LOGSYS(ERROR) << "error happened when reading from connection " << name_;
+      handleError();
+    }
   }
 }
 
 void TCPConnection::handleWrite() {
+  if (status_ != Status::kConnected)
+    return;
+
   LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
   ssize_t n = out_buffer_.readToFD(channel_->fd());
 
@@ -107,6 +117,9 @@ void TCPConnection::send(const Buffer& buffer) {
 
 void TCPConnection::shutdown() {
   assertInLoop();
+  if (status_ == Status::kDisconnected)
+    return;
+
   status_ = Status::kDisconnecting;
 
   if (!channel_->isWriting()) {

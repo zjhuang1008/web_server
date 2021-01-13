@@ -2,11 +2,17 @@
 
 #include <mutex>
 #include <sys/epoll.h>
-#include <assert.h>
+#include <cassert>
 
 #include "srcs/net/channel/channel.h"
 #include "srcs/net/sys_wrapper/sysw.h"
 #include "srcs/logger/logger.h"
+
+static const std::unordered_map<int, std::string> epoll_ctl_op_names = {
+  {EPOLL_CTL_ADD, "EPOLL_CTL_ADD"},
+  {EPOLL_CTL_DEL, "EPOLL_CTL_DEL"},
+  {EPOLL_CTL_MOD, "EPOLL_CTL_MOD"},
+};
 
 using namespace net;
 
@@ -70,5 +76,12 @@ void EpollPoller::epollCtlWrapper(const ChannelPtr& ch, int op) {
   struct epoll_event event;
   event.events = static_cast<uint32_t>(ch->events_type());
   event.data.fd = fd;
-  sysw::epoll_ctl(epoll_fd_, op, fd, &event);
+  int ok = sysw::epoll_ctl(epoll_fd_, op, fd, &event);
+  if (ok < 0 || event.events == 0) {
+    LOG(DEBUG) << "call epoll_ctl with "
+               << "epfd=" << epoll_fd_ << ", "
+               << "op=" << epoll_ctl_op_names.at(op) << ", "
+               << "fd=" << fd << ", "
+               << "events=" << Fmt("%08X", event.events);
+  }
 }

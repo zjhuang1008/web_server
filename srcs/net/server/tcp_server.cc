@@ -79,6 +79,7 @@ void TCPServer::acceptorReadCallback() {
 
 void TCPServer::connectionCloseCallback(const TCPConnectionPtr &conn) {
   loop_->runInLoop([this, conn](){
+    LOG(DEBUG) << "connection " << conn->name() << " erased";
     connections_.erase(conn->name());
   });
 }

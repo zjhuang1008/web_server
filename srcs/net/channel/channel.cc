@@ -1,6 +1,7 @@
 #include "srcs/net/channel/channel.h"
 
 #include <functional>
+#include <utility>
 #include <sys/poll.h>
 #include <unistd.h>
 
@@ -19,7 +20,9 @@ using namespace net;
 
 Channel::Channel(EventLoopPtr loop, FDHandler fd_handler) : 
   loop_(std::move(loop)),
-  fd_handler_(fd_handler) {
+  fd_handler_(std::move(fd_handler)),
+  events_type_(kNoneEvent),
+  revents_type_(kNoneEvent) {
 
 }
 
@@ -31,19 +34,25 @@ Channel::Channel(EventLoopPtr loop, FDHandler fd_handler) :
 //}
 
 void Channel::handleEvent() {
+  // TODO: whether needed
+  // use guard to reserve a reference to this in this scope.
+  auto guard = shared_from_this();
+
+  if ((revents_type_ & POLLHUP) && !(revents_type_ & POLLIN)) {
+    LOG(DEBUG) << "fd " << fd_handler_ << " receive POLLHUP";
+    if (closeCallback_) closeCallback_();
+  }
+
+  if (revents_type_ & (POLLERR | POLLNVAL)) {
+    LOG(DEBUG) << "fd " << fd_handler_ << " receive POLLERR | POLLNVAL";
+    if (errorCallback_) errorCallback_();
+  }
+
   if (revents_type_ & (POLLIN | POLLRDHUP | POLLPRI)) {
     if (readCallback_) readCallback_();
   }
   
   if (revents_type_ & POLLOUT) {
     if (writeCallback_) writeCallback_();
-  }
-
-  if ((revents_type_ & POLLHUP) && !(revents_type_ & POLLIN)) {
-    if (closeCallback_) closeCallback_();
-  }
-
-  if (revents_type_ & (POLLERR | POLLNVAL)) {
-    if (errorCallback_) errorCallback_();
   }
 }
