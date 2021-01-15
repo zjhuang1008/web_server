@@ -18,6 +18,7 @@ static const int kPollTimeMs = -1;
 
 EventLoop::EventLoop() : 
   thread_id_(std::this_thread::get_id()),
+  looping_(false),
   wakeup_fd_(sysw::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK)),
   poller_(Poller::newPoller()) {
 }
@@ -109,9 +110,13 @@ void EventLoop::queueInLoop(Callback cb) {
     std::lock_guard<std::mutex> lk(mutex_);
     pending_callbacks_.push_back(std::move(cb));
   }
-  
+
   if (!isInLoopThread()) {
-    // TODO: wakeup only no events happening.
+    // alternative: wakeup only no events happening.
+    // Make a test on it, find that it brings no improvement.
+    // Possible reason: io loop spends most of its time to perform
+    // `ch->handleEvents()` and `doPendingCallback` rather than
+    // `poller_->poll()`
     wakeup();
   }
 }

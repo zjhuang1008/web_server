@@ -106,10 +106,10 @@ Logger::~Logger() {
   const LogStream::Buffer& buf = stream_.buffer();
   g_output_func(buf.data(), buf.len());
   // TODO: when use remote debug of clion, flush is needed
-  g_flush_func();
-//  if (level_ == FATAL) {
-//    g_flush_func();
-//  }
+//  g_flush_func();
+  if (level_ == FATAL) {
+    g_flush_func();
+  }
 }
 
 void Logger::setOutputFunc(OutputFunc func) {

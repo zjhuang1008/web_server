@@ -38,6 +38,7 @@ private:
   std::unordered_map<std::string, TCPConnectionPtr> connections_;
 
   int next_conn_id_;
+//  size_t maximum_conn_num_;
 };
 
 } // namespace net

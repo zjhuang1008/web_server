@@ -57,12 +57,14 @@ void TCPConnection::handleError() {
 
 void TCPConnection::handleRead() {
   if (status_ == Status::kConnected || status_ == Status::kDisconnecting) {
+    // when status_ is Status::kDisconnecting, EOF will read from the socket fd.
 //    LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
     ssize_t n = in_buffer_.writeFromFD(channel_->fd());
 
     if (n > 0) {
       readCallback_(in_buffer_, shared_from_this());
     } else if (n == 0) {
+      // read EOF (it means another end calls shutdown)
       handleClose();
     } else {
       LOGSYS(ERROR) << "error happened when reading from connection " << name_;
@@ -72,8 +74,7 @@ void TCPConnection::handleRead() {
 }
 
 void TCPConnection::handleWrite() {
-  if (status_ != Status::kConnected)
-    return;
+  assert(status_ == Status::kConnected);
 
 //  LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
   ssize_t n = out_buffer_.readToFD(channel_->fd());
