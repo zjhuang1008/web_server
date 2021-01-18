@@ -11,7 +11,7 @@
 
 using namespace net;
 
-TCPConnection::TCPConnection(const EventLoopPtr& io_loop,
+TCPConnection::TCPConnection(EventLoopPtr& io_loop,
                              FDHandler socket_fd,
                              const SocketAddress& host_addr,
                              const SocketAddress& peer_addr,
@@ -100,19 +100,30 @@ void TCPConnection::handleWrite() {
   }
 }
 
-void TCPConnection::send(const Buffer& buffer) {
+void TCPConnection::send(Buffer buffer) {
   assertInLoop();
 
-  out_buffer_.append(buffer.readerIter(), buffer.readableSize());
+  // send buffer immediately
+  ssize_t n = buffer.readToFD(channel_->fd());
+  if (n < 0) {
+    LOGSYS(ERROR) << "error happened when writing to connection " << name_;
+    handleError();
+    return;
+  }
 
-  // TODO: highWaterMarkCallback
+  if (buffer.readableSize() > 0) {
+    LOG(ERROR) << "the first write doesn't complete";
+    out_buffer_.append(buffer.readerIter(), buffer.readableSize());
 
-  if (!channel_->isWriting()) {
-    channel_->enableWriting();
-    io_loop_->updateChannelInPoller(channel_);
+    // TODO: highWaterMarkCallback
 
-    // perform write immediately when no writes before
-    handleWrite();
+    if (!channel_->isWriting()) {
+      channel_->enableWriting();
+      io_loop_->updateChannelInPoller(channel_);
+
+      // perform write immediately when no writes before
+      // handleWrite();
+    }
   }
 }
 

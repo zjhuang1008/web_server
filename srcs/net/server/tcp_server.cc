@@ -50,7 +50,7 @@ void TCPServer::acceptorReadCallback() {
     return;
   }
 
-  EventLoopPtr io_loop = io_thread_pool_.getNextLoop();
+  EventLoopPtr& io_loop = io_thread_pool_.getNextLoop();
 
   char buff[64];
   snprintf(buff, sizeof buff, "%s->%s-#%d",

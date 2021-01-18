@@ -16,7 +16,7 @@ public:
 //  ~EventLoopThread() = default;
   
   void startLoop();
-  EventLoopPtr loop() { return loop_; };
+  EventLoopPtr& loop() { return loop_; };
 
   // void addChannel(ChannelPtr ch);
 private:

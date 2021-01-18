@@ -14,7 +14,7 @@ public:
   EventLoopThreadPool(size_t num_threads);
   ~EventLoopThreadPool() = default;
 
-  EventLoopPtr getNextLoop();
+  EventLoopPtr& getNextLoop();
 private:
   size_t num_threads_;
   std::vector<EventLoopThreadPtr> threads_;

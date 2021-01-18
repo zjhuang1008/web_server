@@ -25,7 +25,7 @@ public:
   using CloseCallback = std::function<void(const TCPConnectionPtr&)>;
   using ReadCallback = std::function<void(Buffer&, const TCPConnectionPtr&)>;
 
-  TCPConnection(const EventLoopPtr& io_loop,
+  TCPConnection(EventLoopPtr& io_loop,
                 FDHandler socket_fd,
                 const SocketAddress& host_addr,
                 const SocketAddress& peer_addr,
@@ -50,12 +50,12 @@ public:
   const boost::any& getContext() { return context_; }
   boost::any* getMutableContext() { return &context_; }
 
-  void send(const Buffer& buffer);
+  void send(Buffer buffer);
 //  void sendInLoop(Buffer buffer);
 
   void shutdown();
 private:
-  EventLoopPtr io_loop_;
+  EventLoopPtr& io_loop_;
   ChannelPtr channel_;
   SocketAddress host_addr_;
   SocketAddress peer_addr_;

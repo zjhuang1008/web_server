@@ -1,10 +1,8 @@
 #include "srcs/net/thread/event_loop_thread_pool.h"
 
 #include <memory>
-#include <assert.h>
 
 #include "srcs/net/thread/event_loop_thread.h"
-#include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/net/channel/channel.h"
 
 using namespace net;
@@ -22,7 +20,7 @@ EventLoopThreadPool::EventLoopThreadPool(size_t num_threads) :
 // EventLoopThreadPool::~EventLoopThreadPool() {
 // }
 
-EventLoopPtr EventLoopThreadPool::getNextLoop() {
+EventLoopPtr& EventLoopThreadPool::getNextLoop() {
   return getNextThread()->loop();
 }
 
