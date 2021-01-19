@@ -24,11 +24,12 @@ static void defaultReadCallback(Buffer& buffer, const TCPConnectionPtr& conn) {
 
 using namespace net;
 
-TCPServer::TCPServer(const EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_addr)
+TCPServer::TCPServer(EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_addr)
   : loop_(loop),
     io_thread_pool_(num_io_threads),
     acceptor_(loop),
     host_addr_(host_addr),
+    name_(host_addr.toIPPort()),
     createCallback_(net::defaultCreateCallback),
     readCallback_(net::defaultReadCallback),
     connections_(),
@@ -54,7 +55,7 @@ void TCPServer::acceptorReadCallback() {
 
   char buff[64];
   snprintf(buff, sizeof buff, "%s->%s-#%d",
-           peer_addr.toIPPort().c_str(), host_addr_.toIPPort().c_str(), next_conn_id_);
+           peer_addr.toIPPort().c_str(), name_.c_str(), next_conn_id_);
   std::string name(buff);
 
   connections_[name] = std::make_shared<TCPConnection>(

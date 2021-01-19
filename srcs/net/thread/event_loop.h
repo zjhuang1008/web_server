@@ -22,7 +22,6 @@ public:
   void wakeup();
 
   void runInLoop(Callback cb);
-  void queueInLoop(Callback cb);
 
   /// used by this thread
   void wakeupCallback();
@@ -39,6 +38,7 @@ public:
 private:
   void loop();
   void doPendingCallbacks();
+  void queueInLoop(Callback cb);
 
   mutable std::mutex mutex_;
   std::thread::id thread_id_;

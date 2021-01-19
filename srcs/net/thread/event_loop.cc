@@ -111,12 +111,10 @@ void EventLoop::queueInLoop(Callback cb) {
     pending_callbacks_.push_back(std::move(cb));
   }
 
-  if (!isInLoopThread()) {
-    // alternative: wakeup only no events happening.
-    // Make a test on it, find that it brings no improvement.
-    // Possible reason: io loop spends most of its time to perform
-    // `ch->handleEvents()` and `doPendingCallback` rather than
-    // `poller_->poll()`
-    wakeup();
-  }
+  // alternative: wakeup only no events happening.
+  // Make a test on it, find that it brings no improvement.
+  // Possible reason: io loop spends most of its time to perform
+  // `ch->handleEvents()` and `doPendingCallback` rather than
+  // `poller_->poll()`
+  wakeup();
 }

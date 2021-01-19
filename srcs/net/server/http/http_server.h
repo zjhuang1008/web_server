@@ -14,7 +14,7 @@ namespace net {
 class HTTPServer : private Uncopyable {
 public:
   using ResponseCallback = std::function<void(const HTTPRequest&, HTTPResponse&)>;
-  HTTPServer(const EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_address);
+  HTTPServer(EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_address);
 
 //  void setResponseCallback(ResponseCallback cb) { responseCallback_ = std::move(cb); };
   void setResponseCallback(const std::string& path, ResponseCallback cb) {

@@ -25,7 +25,7 @@ static void notFoundHttpCallback(const HTTPRequest&, HTTPResponse& resp) {
 
 using namespace net;
 
-HTTPServer::HTTPServer(const EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_address)
+HTTPServer::HTTPServer(EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_address)
   : server_(loop, num_io_threads, host_address) {
   server_.setConnectionCreateCallback([this](const TCPConnectionPtr& conn) {
     this->connectionOnCreate(conn);

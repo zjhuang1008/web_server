@@ -894,6 +894,7 @@ start_socket( int url_num, int cnum, struct timeval* nowP )
 	{
 	if ( errno == EINPROGRESS )
 	    {
+            /* printf("EINPROGRESS\n"); */
 	    connections[cnum].conn_state = CNST_CONNECTING;
 	    return;
 	    }

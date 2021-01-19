@@ -13,7 +13,7 @@ namespace net {
 
 class Acceptor : private Uncopyable {
 public:
-  Acceptor(EventLoopPtr loop,
+  Acceptor(EventLoopPtr& loop,
            int domain=AF_INET, 
            int type=SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
            int protocol=IPPROTO_TCP);

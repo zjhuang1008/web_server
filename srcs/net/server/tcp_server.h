@@ -16,7 +16,7 @@ namespace net {
 
 class TCPServer : private Uncopyable {
 public:
-  TCPServer(const EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_addr);
+  TCPServer(EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_addr);
 //  ~TCPServer();
 
   void start();
@@ -28,6 +28,7 @@ private:
   EventLoopThreadPool io_thread_pool_;
   Acceptor acceptor_;
   SocketAddress host_addr_;
+  std::string name_;
 
   void acceptorReadCallback();
 

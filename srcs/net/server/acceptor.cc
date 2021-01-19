@@ -11,8 +11,8 @@
 
 using namespace net;
 
-Acceptor::Acceptor(EventLoopPtr loop, int domain, int type, int protocol) 
-  : loop_(std::move(loop)),
+Acceptor::Acceptor(EventLoopPtr& loop, int domain, int type, int protocol)
+  : loop_(loop),
     sockfd_(sysw::socket(domain, type, protocol)),
     sockch_(std::make_shared<Channel>(loop_, sockfd_)) {
   // TODO make it user-define

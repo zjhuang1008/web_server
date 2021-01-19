@@ -112,7 +112,6 @@ void TCPConnection::send(Buffer buffer) {
   }
 
   if (buffer.readableSize() > 0) {
-    LOG(ERROR) << "the first write doesn't complete";
     out_buffer_.append(buffer.readerIter(), buffer.readableSize());
 
     // TODO: highWaterMarkCallback
