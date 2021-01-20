@@ -39,6 +39,12 @@ ssize_t sysw::read(int fd, void* buf, size_t count) {
   return n;
 }
 
+int sysw::close(int fd) {
+  int ok = ::close(fd);
+  if (ok < 0) sysw::log_error("close");
+  return ok;
+}
+
 int sysw::eventfd(unsigned int count, int flags) {
   int fd = ::eventfd(count, flags);
   if (fd < 0) sysw::log_error("eventfd");

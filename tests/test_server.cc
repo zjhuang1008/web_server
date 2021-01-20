@@ -5,7 +5,6 @@
 #include "srcs/net/address/socket_address.h"
 #include "srcs/net/server/http/http_request.h"
 #include "srcs/net/server/http/http_response.h"
-#include "srcs/logger/logger.h"
 
 using namespace net;
 
@@ -22,6 +21,11 @@ int main(int argc, char* argv[]) {
     resp.setStatusCode(HttpStatusCode::k200Ok);
     resp.setHeader("Content-type", "text/plain");
     resp.setBody("Hello World\r\n");
+  });
+  server.setResponseCallback("/", [](const HTTPRequest& req, HTTPResponse& resp) {
+    resp.setStatusCode(HttpStatusCode::k200Ok);
+    resp.setHeader("Content-type", "text/plain");
+    resp.setBody("Home\r\n");
   });
 
   server.start();

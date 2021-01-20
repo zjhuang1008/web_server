@@ -859,7 +859,7 @@ start_socket( int url_num, int cnum, struct timeval* nowP )
 	(void) close( connections[cnum].conn_fd );
 	return;
 	}
-    if ( fcntl( connections[cnum].conn_fd, F_SETFL, flags | O_NDELAY ) < 0 ) 
+    if ( fcntl( connections[cnum].conn_fd, F_SETFL, flags | O_NDEELAY ) < 0 )
 	{
 	perror( urls[url_num].url_str );
 	(void) close( connections[cnum].conn_fd );
