@@ -16,7 +16,7 @@
 * 
 */ 
 
-#include "socket.c"
+//#include "socket.c"
 #include <unistd.h>
 #include <sys/param.h>
 #include <rpc/types.h>
@@ -25,12 +25,63 @@
 #include <time.h>
 #include <signal.h>
 #include <sys/epoll.h>
+#include <sys/poll.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <stdio.h>
 
 /* values */
 volatile int timerexpired=0;
 int speed=0;
 int failed=0;
 int bytes=0;
+long long total_time_to_connect;
+long long total_time_to_response;
+
+int Socket(const char *host, int clientPort, int set_nonblock) {
+  int sock;
+  unsigned long inaddr;
+  struct sockaddr_in ad;
+  struct hostent *hp;
+
+  memset(&ad, 0, sizeof(ad));
+  ad.sin_family = AF_INET;
+
+  inaddr = inet_addr(host);
+  if (inaddr != INADDR_NONE)
+    memcpy(&ad.sin_addr, &inaddr, sizeof(inaddr));
+  else
+  {
+    hp = gethostbyname(host);
+    if (hp == NULL)
+      return -1;
+    memcpy(&ad.sin_addr, hp->h_addr, hp->h_length);
+  }
+  ad.sin_port = htons(clientPort);
+
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0)
+    return sock;
+
+  if (set_nonblock != 0) {
+    int flags = fcntl(sock, F_GETFL);
+    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+    if (connect(sock, (struct sockaddr *)&ad, sizeof(ad)) < 0) {
+      if (errno != EINPROGRESS) {
+        return -1;
+      }
+    }
+    return sock;
+  } else {
+    if (connect(sock, (struct sockaddr *)&ad, sizeof(ad)) < 0)
+      return -1;
+    return sock;
+  }
+}
 
 /* globals */
 int http10=1; /* 0 - http/0.9, 1 - http/1.0, 2 - http/1.1 */
@@ -326,6 +377,7 @@ void build_request(const char *url)
 static int bench(void)
 {
   int i,j,k;
+  long long total_time_connect_delta, total_time_to_response_delta;
   pid_t pid=0;
   FILE *f;
 
@@ -387,7 +439,7 @@ static int bench(void)
       return 3;
     }
     /* fprintf(stderr,"Child - %d %d\n",speed,failed); */
-    fprintf(f,"%d %d %d\n",speed,failed,bytes);
+    fprintf(f,"%d %d %d %lld %lld\n",speed,failed,bytes,total_time_to_connect,total_time_to_response);
     fclose(f);
 
     return 0;
@@ -409,7 +461,7 @@ static int bench(void)
 
     while(1)
     {
-      pid=fscanf(f,"%d %d %d",&i,&j,&k);
+      pid=fscanf(f,"%d %d %d %lld %lld",&i,&j,&k,&total_time_connect_delta, &total_time_to_response_delta);
       if(pid<2)
       {
         fprintf(stderr,"Some of our childrens died.\n");
@@ -419,6 +471,8 @@ static int bench(void)
       speed+=i;
       failed+=j;
       bytes+=k;
+      total_time_to_connect += total_time_connect_delta;
+      total_time_to_response += total_time_to_response_delta;
 
       /* fprintf(stderr,"*Knock* %d %d read=%d\n",speed,failed,pid); */
       if(--clients==0) break;
@@ -426,25 +480,39 @@ static int bench(void)
 
     fclose(f);
 
-    printf("\nSpeed=%d pages/min, %d bytes/sec.\nRequests: %d susceed, %d failed.\n",
+    printf("\nSpeed=%d pages/min, %d bytes/sec.\nRequests: %d succeed, %d failed.\n",
         (int)((speed+failed)/(benchtime/60.0f)),
         (int)(bytes/(float)benchtime),
         speed,
         failed);
+    printf("mean time to connect (ms)=%g\n", (float) total_time_to_connect / (float) speed / 1000.0);
+    printf("mean time to response (ms)=%g\n", (float) total_time_to_response / (float) speed / 1000.0);
   }
 
   return i;
 }
 
+static long long
+delta_timeval( struct timeval* start, struct timeval* end ) {
+  long long delta_secs = end->tv_sec - start->tv_sec;
+  long long delta_usecs = end->tv_usec - start->tv_usec;
+  return delta_secs * (long long) 1000000L + delta_usecs;
+}
+
 void benchcore(const char *host,const int port,const char *req)
 {
-  int rlen;
+  int rlen = strlen(req);
+  int wlen = 0;
+  const char* wptr = req;
   char buf[1500];
+  char* buf_ptr = buf;
   int sock_fd,i;
   int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
   struct sigaction sa;
   struct timeval connect_at;
+  int requested = 0;
   struct timeval request_at;
+  int responsed = 0;
   struct timeval response_at;
 
   /* setup alarm signal handler */
@@ -455,13 +523,9 @@ void benchcore(const char *host,const int port,const char *req)
 
   alarm(benchtime); // after benchtime,then exit
 
-  rlen=strlen(req);
-  nexttry:while(1)
-  {
-    if(timerexpired)
-    {
-      if(failed>0)
-      {
+  nexttry:while(1) {
+    if (timerexpired) {
+      if (failed>0) {
         /* fprintf(stderr,"Correcting failed by signal\n"); */
         failed--;
       }
@@ -473,47 +537,104 @@ void benchcore(const char *host,const int port,const char *req)
     if(sock_fd < 0) { failed++;continue;}
 
     struct epoll_event event;
-    event.events = EPOLLOUT;
+    event.events = POLLOUT | POLLIN | POLLPRI;
     event.data.fd = sock_fd;
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock_fd, &event);
 
-    while (1) {
+    while (!timerexpired) {
       struct epoll_event revent;
       if (epoll_wait(epoll_fd, &revent, 1, 1000) < 0) {
-        failed++;
+        failed ++;
         close(sock_fd);
         break;
       }
-      gettimeofday(&request_at, NULL);
+      if (revent.events & POLLOUT) {
+        if (!requested) {
+          gettimeofday(&request_at, NULL);
+          requested = 1;
+        }
 
-    }
-
-
-    if(rlen!=write(sock_fd, req, rlen)) {failed++;close(sock_fd);continue;}
-
-    if(http10==0)
-      if(shutdown(sock_fd, 1)) { failed++;close(sock_fd);continue;}
-    if(force==0)
-    {
-      /* read all available data from socket */
-      while(1)
-      {
-        if(timerexpired) break;
-        i=read(sock_fd, buf, 1500);
-        /* fprintf(stderr,"%d\n",i); */
-        if(i < 0)
-        {
+//        printf("send request.\n");
+        int n = write(sock_fd, wptr, rlen-wlen);
+        if (n < 0) {
           failed++;
           close(sock_fd);
           goto nexttry;
         }
-        else
-        if(i==0) break;
-        else
-        bytes+=i;
+        wptr += n;
+        wlen += n;
+
+        if (wlen == rlen) {
+//          printf("send request succeed.\n");
+          if (http10 == 0) {
+            if (shutdown(sock_fd, 1)) {
+              failed++;
+              close(sock_fd);
+              goto nexttry;
+            }
+          }
+          // force not to wait reply
+          if (force == 1) break;
+        }
+      } else if (revent.events & (POLLIN | POLLPRI)) {
+        if (!responsed) {
+          gettimeofday(&response_at, NULL);
+          responsed = 1;
+        }
+        printf("receive response.\n");
+        i=read(sock_fd, buf_ptr, 1500);
+        if (i < 0) {
+          failed++;
+          close(sock_fd);
+          goto nexttry;
+        } else if (i==0)
+          break;
+        else {
+          bytes += i;
+          buf_ptr += i;
+        }
+      } else if (revent.events & (POLLERR | POLLNVAL)) {
+        printf("epoll meets error");
+        failed++;
+        close(sock_fd);
+        goto nexttry;
       }
     }
-    if(close(sock_fd)) {failed++;continue;}
-    speed++;
+    if (close(sock_fd)) {
+      failed++; continue;
+    }
+    if (requested && responsed) {
+      total_time_to_connect += delta_timeval(&connect_at, &request_at);
+      total_time_to_response += delta_timeval(&request_at, &response_at);
+      speed++;
+    } else {
+      failed++;
+    }
+//    if(rlen!=write(sock_fd, req, rlen)) {failed++;close(sock_fd);continue;}
+//
+//    if(http10==0)
+//      if(shutdown(sock_fd, 1)) { failed++;close(sock_fd);continue;}
+//    if(force==0)
+//    {
+//      /* read all available data from socket */
+//      while(1)
+//      {
+//        if(timerexpired) break;
+//        i=read(sock_fd, buf, 1500);
+//        /* fprintf(stderr,"%d\n",i); */
+//        if(i < 0)
+//        {
+//          failed++;
+//          close(sock_fd);
+//          goto nexttry;
+//        }
+//        else
+//        if(i==0) break;
+//        else
+//        bytes+=i;
+//      }
+//    }
+//    if(close(sock_fd)) {failed++;continue;}
+//    speed++;
   }
 }
