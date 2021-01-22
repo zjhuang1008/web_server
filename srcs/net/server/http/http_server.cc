@@ -58,7 +58,7 @@ void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& con
     to_send = true;
 
     const std::string& path = request.getPath();
-//    LOG(DEBUG) << "connection " << conn->name() << " receive " << path;
+    LOG(DEBUG) << "connection " << conn->name() << " receive " << path;
 
     if (responseCallbacks_.count(path)) {
       // request can be handled

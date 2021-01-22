@@ -58,7 +58,7 @@ void TCPConnection::handleError() {
 void TCPConnection::handleRead() {
   if (status_ == Status::kConnected || status_ == Status::kDisconnecting) {
     // when status_ is Status::kDisconnecting, EOF will read from the socket fd.
-//    LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
+    LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
     ssize_t n = in_buffer_.writeFromFD(channel_->fd());
 
     if (n > 0) {
@@ -76,7 +76,7 @@ void TCPConnection::handleRead() {
 void TCPConnection::handleWrite() {
   assert(status_ == Status::kConnected);
 
-//  LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
+  LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
   ssize_t n = out_buffer_.readToFD(channel_->fd());
 
   if (n < 0) {

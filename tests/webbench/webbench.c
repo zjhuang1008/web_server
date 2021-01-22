@@ -373,11 +373,20 @@ void build_request(const char *url)
   printf("\nRequest:\n%s\n",request);
 }
 
+static long long
+delta_timeval( struct timeval* start, struct timeval* end ) {
+  long long delta_secs = end->tv_sec - start->tv_sec;
+  long long delta_usecs = end->tv_usec - start->tv_usec;
+  return delta_secs * (long long) 1000000L + delta_usecs;
+}
+
 /* vraci system rc error kod */
 static int bench(void)
 {
   int i,j,k;
   long long total_time_connect_delta, total_time_to_response_delta;
+  struct timeval benchcore_start;
+  struct timeval benchcore_end;
   pid_t pid=0;
   FILE *f;
 
@@ -426,10 +435,14 @@ static int bench(void)
   if(pid == (pid_t) 0)
   {
     /* I am a child */
+    gettimeofday(&benchcore_start, NULL);
     if(proxyhost==NULL)
       benchcore(host,proxyport,request);
     else
       benchcore(proxyhost,proxyport,request);
+    gettimeofday(&benchcore_end, NULL);
+    printf("benchcore has run %g s \n",
+           (float) delta_timeval(&benchcore_start, &benchcore_end) / 1000000.);
 
     /* write results to pipe */
     f=fdopen(mypipe[1],"w");
@@ -492,27 +505,15 @@ static int bench(void)
   return i;
 }
 
-static long long
-delta_timeval( struct timeval* start, struct timeval* end ) {
-  long long delta_secs = end->tv_sec - start->tv_sec;
-  long long delta_usecs = end->tv_usec - start->tv_usec;
-  return delta_secs * (long long) 1000000L + delta_usecs;
-}
-
 void benchcore(const char *host,const int port,const char *req)
 {
   int rlen = strlen(req);
-  int wlen = 0;
-  const char* wptr = req;
   char buf[1500];
-  char* buf_ptr = buf;
   int sock_fd,i;
   int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
   struct sigaction sa;
   struct timeval connect_at;
-  int requested = 0;
   struct timeval request_at;
-  int responsed = 0;
   struct timeval response_at;
 
   /* setup alarm signal handler */
@@ -523,18 +524,18 @@ void benchcore(const char *host,const int port,const char *req)
 
   alarm(benchtime); // after benchtime,then exit
 
-  nexttry:while(1) {
-    if (timerexpired) {
-      if (failed>0) {
-        /* fprintf(stderr,"Correcting failed by signal\n"); */
-        failed--;
-      }
-      return;
-    }
+  while (!timerexpired) {
 
-    sock_fd=Socket(host, port, 1);
+    int wlen = 0;
+    const char* wptr = req;
+    char* buf_ptr = buf;
+    int requested = 0;
+    int responsed = 0;
+
+    int failed_try = 0;
+    sock_fd = Socket(host, port, 1);
     gettimeofday(&connect_at, NULL);
-    if(sock_fd < 0) { failed++;continue;}
+    if (sock_fd < 0) { failed ++; continue;}
 
     struct epoll_event event;
     event.events = POLLOUT | POLLIN | POLLPRI;
@@ -544,8 +545,8 @@ void benchcore(const char *host,const int port,const char *req)
     while (!timerexpired) {
       struct epoll_event revent;
       if (epoll_wait(epoll_fd, &revent, 1, 1000) < 0) {
-        failed ++;
-        close(sock_fd);
+        printf("epoll_wait failed with error: %s (%d)\n", strerror(errno), errno);
+        failed_try = 1;
         break;
       }
       if (revent.events & POLLOUT) {
@@ -554,23 +555,23 @@ void benchcore(const char *host,const int port,const char *req)
           requested = 1;
         }
 
-//        printf("send request.\n");
         int n = write(sock_fd, wptr, rlen-wlen);
         if (n < 0) {
-          failed++;
-          close(sock_fd);
-          goto nexttry;
+          if (errno == EAGAIN) continue;
+          printf("write failed with error: %s (%d)\n", strerror(errno), errno);
+          failed_try = 1;
+          break;
         }
         wptr += n;
         wlen += n;
 
         if (wlen == rlen) {
-//          printf("send request succeed.\n");
+          event.events &= ~POLLOUT;
+          epoll_ctl(epoll_fd, EPOLL_CTL_MOD, sock_fd, &event);
           if (http10 == 0) {
-            if (shutdown(sock_fd, 1)) {
-              failed++;
-              close(sock_fd);
-              goto nexttry;
+            if (shutdown(sock_fd, SHUT_WR)) {
+              failed_try = 1;
+              break;
             }
           }
           // force not to wait reply
@@ -581,60 +582,46 @@ void benchcore(const char *host,const int port,const char *req)
           gettimeofday(&response_at, NULL);
           responsed = 1;
         }
-        printf("receive response.\n");
-        i=read(sock_fd, buf_ptr, 1500);
+  //        printf("receive response.\n");
+        i = read(sock_fd, buf_ptr, 1500);
         if (i < 0) {
-          failed++;
-          close(sock_fd);
-          goto nexttry;
-        } else if (i==0)
+          if (errno == EAGAIN) continue;
+          printf("read failed with error: %s (%d)\n", strerror(errno), errno);
+          failed_try = 1;
           break;
-        else {
+        } else if (i == 0) {
+          break;
+        } else {
           bytes += i;
           buf_ptr += i;
         }
       } else if (revent.events & (POLLERR | POLLNVAL)) {
-        printf("epoll meets error");
-        failed++;
-        close(sock_fd);
-        goto nexttry;
+        printf("epoll meets error\n");
+        failed_try = 1;
+        break;
       }
     }
+
     if (close(sock_fd)) {
-      failed++; continue;
-    }
-    if (requested && responsed) {
-      total_time_to_connect += delta_timeval(&connect_at, &request_at);
-      total_time_to_response += delta_timeval(&request_at, &response_at);
-      speed++;
+      printf("closed failed with error: %s (%d)\n", strerror(errno), errno);
+      failed_try = 1;
     } else {
-      failed++;
+      if (requested && responsed) {
+        total_time_to_connect += delta_timeval(&connect_at, &request_at);
+        total_time_to_response += delta_timeval(&request_at, &response_at);
+      } else {
+        printf("failed to request and response.\n");
+        failed_try = 1;
+      }
     }
-//    if(rlen!=write(sock_fd, req, rlen)) {failed++;close(sock_fd);continue;}
-//
-//    if(http10==0)
-//      if(shutdown(sock_fd, 1)) { failed++;close(sock_fd);continue;}
-//    if(force==0)
-//    {
-//      /* read all available data from socket */
-//      while(1)
-//      {
-//        if(timerexpired) break;
-//        i=read(sock_fd, buf, 1500);
-//        /* fprintf(stderr,"%d\n",i); */
-//        if(i < 0)
-//        {
-//          failed++;
-//          close(sock_fd);
-//          goto nexttry;
-//        }
-//        else
-//        if(i==0) break;
-//        else
-//        bytes+=i;
-//      }
-//    }
-//    if(close(sock_fd)) {failed++;continue;}
-//    speed++;
+
+    if (failed_try) {
+      if (!timerexpired) failed ++;
+    } else {
+      speed ++;
+    }
   }
+
+  if (close(epoll_fd))
+    perror("close epoll_fd failed");
 }
