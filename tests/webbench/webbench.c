@@ -441,8 +441,8 @@ static int bench(void)
     else
       benchcore(proxyhost,proxyport,request);
     gettimeofday(&benchcore_end, NULL);
-    printf("benchcore has run %g s \n",
-           (float) delta_timeval(&benchcore_start, &benchcore_end) / 1000000.);
+//    printf("benchcore has run %g s \n",
+//           (float) delta_timeval(&benchcore_start, &benchcore_end) / 1000000.);
 
     /* write results to pipe */
     f=fdopen(mypipe[1],"w");
@@ -544,7 +544,7 @@ void benchcore(const char *host,const int port,const char *req)
 
     while (!timerexpired) {
       struct epoll_event revent;
-      if (epoll_wait(epoll_fd, &revent, 1, 1000) < 0) {
+      if (epoll_wait(epoll_fd, &revent, 1, -1) < 0) {
         printf("epoll_wait failed with error: %s (%d)\n", strerror(errno), errno);
         failed_try = 1;
         break;
