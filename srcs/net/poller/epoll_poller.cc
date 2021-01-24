@@ -34,7 +34,10 @@ int EpollPoller::poll(int timeout_ms) {
                                     timeout_ms);
   
   if (num_events < 0) return num_events;
-  
+
+  if (static_cast<size_t>(num_events) == events_.size()) {
+    events_.resize(events_.size() * 2);
+  }
 //  LOG(DEBUG) << Fmt("get %d events", num_events);
 
   for (size_t i = 0; i < static_cast<size_t>(num_events); ++ i) {
@@ -67,7 +70,7 @@ void EpollPoller::removeChannel(const ChannelPtr& ch) {
 #ifdef NDEBUG
   assert(fd2channels_.count(fd));
 #endif
-  epollCtlWrapper(ch, EPOLL_CTL_DEL); 
+  epollCtlWrapper(ch, EPOLL_CTL_DEL);
   fd2channels_.erase(ch->fd());
 }
 
@@ -76,6 +79,7 @@ void EpollPoller::epollCtlWrapper(const ChannelPtr& ch, int op) {
   struct epoll_event event;
   event.events = static_cast<uint32_t>(ch->events_type());
   event.data.fd = fd;
+  // TODO: use ptr to reduce a lookup in fd2channels_ when event happens
   int ok = sysw::epoll_ctl(epoll_fd_, op, fd, &event);
   if (ok < 0 || event.events == 0) {
     LOG(DEBUG) << "call epoll_ctl with "
