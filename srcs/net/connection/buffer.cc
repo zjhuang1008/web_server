@@ -41,7 +41,7 @@ ssize_t Buffer::writeFromFD(int fd) {
   vec[0].iov_len = writable_sz;
   vec[1].iov_base = tmp_buf;
   vec[1].iov_len = kTmpBuffSize;
-  
+
   const ssize_t n = sysw::readv(fd, vec, 2);
   if (n < 0) {
     return n;
