@@ -3,9 +3,11 @@
 
 #include <functional>
 #include <memory>
+#include <cstddef>
 
 namespace net {
   using std::size_t;
+  using std::ptrdiff_t;
 
   class Channel;
   class EventLoop;
