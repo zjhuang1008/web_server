@@ -1,6 +1,6 @@
 #include "srcs/net/server/http/http_response.h"
 
-#include "srcs/net/connection/buffer.h"
+#include "srcs/net/connection/buffer/buffer.h"
 
 using namespace net;
 

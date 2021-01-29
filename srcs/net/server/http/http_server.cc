@@ -2,7 +2,7 @@
 
 #include <boost/any.hpp>
 
-#include "srcs/net/connection/buffer.h"
+#include "srcs/net/connection/buffer/buffer.h"
 #include "srcs/net/connection/tcp_connection.h"
 #include "srcs/net/server/http/http_request.h"
 #include "srcs/net/server/http/http_context.h"

@@ -11,5 +11,5 @@ const std::vector<int> gHttpStatusCodes({
 const std::vector<std::string> gHttpStatusMessages({
   "OK", "Moved Permanently", "Bad Request", "Not Found"
 });
-
+const char* kCRLF = "\r\n";
 } // namespace net

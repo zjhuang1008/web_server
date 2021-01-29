@@ -15,6 +15,7 @@ namespace net {
   class Poller;
   class TCPConnection;
   class Buffer;
+  class LinkedBuffer;
   class SocketAddress;
   
   class HTTPServer;

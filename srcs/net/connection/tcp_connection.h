@@ -7,7 +7,7 @@
 
 #include "srcs/utils/uncopyable.h"
 #include "srcs/net/types.h"
-#include "srcs/net/connection/buffer.h"
+#include "srcs/net/connection/buffer/buffer.h"
 #include "srcs/net/address/socket_address.h"
 
 #include <boost/any.hpp>

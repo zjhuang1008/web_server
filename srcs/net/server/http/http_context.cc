@@ -2,15 +2,15 @@
 
 #include <algorithm>
 
-#include "srcs/net/connection/buffer.h"
+#include "srcs/net/connection/buffer/buffer.h"
 #include "srcs/logger/logger.h"
 
 using namespace net;
 
 bool HTTPContext::parseRequest(Buffer& buff) {  
   for (; state_ != HTTPRequestParseState::kGotAll;) {
-    const char* crlf_iter = buff.findCRLF();
-    if (crlf_iter != buff.writerIter()) {
+    const char* crlf_iter = std::search(buff.readerIter(), buff.end(), kCRLF, kCRLF+2);
+    if (crlf_iter != buff.end()) {
       if (parseOneLine(buff.readerIter(), crlf_iter)) {
         buff.readUntil(crlf_iter + 2);
       } else {
