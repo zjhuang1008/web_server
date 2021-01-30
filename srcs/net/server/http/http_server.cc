@@ -2,7 +2,7 @@
 
 #include <boost/any.hpp>
 
-#include "srcs/net/connection/buffer/buffer.h"
+#include "srcs/net/connection/buffer/buffer_factory.h"
 #include "srcs/net/connection/tcp_connection.h"
 #include "srcs/net/server/http/http_request.h"
 #include "srcs/net/server/http/http_context.h"
@@ -25,21 +25,24 @@ static void notFoundHttpCallback(const HTTPRequest&, HTTPResponse& resp) {
 
 using namespace net;
 
-HTTPServer::HTTPServer(EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_address)
+template<typename BufferType>
+HTTPServer<BufferType>::HTTPServer(EventLoopPtr& loop, size_t num_io_threads, SocketAddress host_address)
   : server_(loop, num_io_threads, host_address) {
-  server_.setConnectionCreateCallback([this](const TCPConnectionPtr& conn) {
+  server_.setConnectionCreateCallback([this](const TCPConnectionPtr<BufferType>& conn) {
     this->connectionOnCreate(conn);
   });
-  server_.setConnectionReadCallback([this](Buffer& in_buffer, const TCPConnectionPtr& conn) {
+  server_.setConnectionReadCallback([this](BufferType& in_buffer, const TCPConnectionPtr<BufferType>& conn) {
     this->connectionOnRead(in_buffer, conn);
   });
 }
 
-void HTTPServer::connectionOnCreate(const TCPConnectionPtr& conn) {
+template<typename BufferType>
+void HTTPServer<BufferType>::connectionOnCreate(const TCPConnectionPtr<BufferType>& conn) {
   conn->setContext(HTTPContext());
 }
 
-void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& conn) {
+template<typename BufferType>
+void HTTPServer<BufferType>::connectionOnRead(BufferType& in_buffer, const TCPConnectionPtr<BufferType>& conn) {
   HTTPResponse response;
   HTTPContext* http_context = boost::any_cast<HTTPContext>(conn->getMutableContext());
 
@@ -78,10 +81,16 @@ void HTTPServer::connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& con
   }
 
   if (to_send) {
-    conn->send(response.toBuffer());
+    conn->send([&response](BufferType& buff) {
+      response.appendToBuffer(buff);
+    });
 
     if (response.getCloseConnection()) {
       conn->shutdown();
     }
   }
 }
+
+// explict instantiations
+template class net::HTTPServer<LinkedBuffer>;
+template class net::HTTPServer<Buffer>;

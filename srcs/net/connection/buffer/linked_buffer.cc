@@ -148,7 +148,7 @@ ssize_t LinkedBuffer::writeFromFD(int fd) {
 ssize_t LinkedBuffer::readToFD(int fd) {
   std::vector<struct iovec> vec = toIOVec();
   ssize_t n = sysw::writev(fd, &(*vec.begin()), static_cast<int>(vec.size()));
-  if (n <= 0) return n;
+  if (n < 0) return n;
 
   read(static_cast<size_t>(n));
   return 0;
@@ -204,7 +204,3 @@ size_t LinkedBuffer::readableSize() const {
   }
   return sz;
 }
-
-//LinkedBuffer::iterator LinkedBuffer::findCRLF() {
-//  return std::search(readerIter(), end(), kCRLF, kCRLF+2);
-//}

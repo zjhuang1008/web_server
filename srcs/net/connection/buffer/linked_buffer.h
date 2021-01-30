@@ -152,14 +152,10 @@ public:
   void freeNodesBefore(const NodeContainer::iterator& node_iter);
 
   size_t readableSize() const;
-
-//  iterator findCRLF();
 private:
   // buffer contains a list of node, each node has a char array
   NodeContainer buffer_;
 
-//  iterator begin_iter_;
-//  iterator end_iter_;
   iterator reader_iter_;
 
   std::vector<struct iovec> toIOVec() const;

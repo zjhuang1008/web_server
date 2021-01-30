@@ -59,16 +59,10 @@ public:
   void append(const char *tmp_buf, size_t len);
   void append(const char *str) { append(str, strlen(str)); }
   void append(const std::string& str) { append(str.c_str(), str.size()); }
-
-//  const char* findCRLF() {
-//    return std::search(readerIter(), end(), kCRLF, kCRLF+2);
-//  }
 private:
   std::vector<char> buffer_;
   size_t reader_index_;
   size_t writer_index_;
-
-//  static const char *kCRLF;
 };
 
 }; // namespace

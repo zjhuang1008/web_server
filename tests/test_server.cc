@@ -5,6 +5,7 @@
 #include "srcs/net/address/socket_address.h"
 #include "srcs/net/server/http/http_request.h"
 #include "srcs/net/server/http/http_response.h"
+#include "srcs/net/connection/buffer/buffer_factory.h"
 
 using namespace net;
 
@@ -15,7 +16,7 @@ int main(int argc, char* argv[]) {
   EventLoopPtr loop = std::make_shared<EventLoop>();
   SocketAddress address(port);
 
-  HTTPServer server(loop, num_io_threads, address);
+  HTTPServer<Buffer> server(loop, num_io_threads, address);
 
   server.setResponseCallback("/hello", [](const HTTPRequest& req, HTTPResponse& resp) {
     resp.setStatusCode(HttpStatusCode::k200Ok);

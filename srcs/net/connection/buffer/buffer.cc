@@ -2,14 +2,11 @@
 
 #include <string>
 
-#include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/net/sys_wrapper/sysw.h"
 
 using namespace net;
 
 static constexpr size_t kTmpBuffSize = 65536;  // 64KB
-
-//const char* Buffer::kCRLF = "\r\n";
 
 bool Buffer::read(size_t len) {
   size_t readable_sz = readableSize();
@@ -67,7 +64,7 @@ ssize_t Buffer::readToFD(int fd) {
 
   reader_index_ += static_cast<size_t>(n);
 
-  return 0;
+  return n;
 }
 
 void Buffer::append(const char *tmp_buf, size_t len) {

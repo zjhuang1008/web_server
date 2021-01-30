@@ -11,6 +11,7 @@
 
 namespace net {
 
+template<typename BufferType>
 class HTTPServer : private Uncopyable {
 public:
   using ResponseCallback = std::function<void(const HTTPRequest&, HTTPResponse&)>;
@@ -23,13 +24,14 @@ public:
 
   void start() { server_.start(); }
 private:
-  TCPServer server_;
+  TCPServer<BufferType> server_;
 
 //  ResponseCallback responseCallback_;
   std::unordered_map<std::string, ResponseCallback> responseCallbacks_;
 
-  void connectionOnCreate(const TCPConnectionPtr& conn);
-  void connectionOnRead(Buffer& in_buffer, const TCPConnectionPtr& conn);
+  void connectionOnCreate(const TCPConnectionPtr<BufferType>& conn);
+
+  void connectionOnRead(BufferType& in_buffer, const TCPConnectionPtr<BufferType>& conn);
 };
 
 } // namespace net
