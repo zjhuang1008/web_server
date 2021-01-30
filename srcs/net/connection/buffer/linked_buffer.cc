@@ -9,7 +9,7 @@
 
 using namespace net;
 
-//const char* LinkedBuffer::kCRLF = "\r\n";
+static constexpr size_t kTmpBuffSize = 65536;  // 64KB
 
 void LinkedBufferIter::toLastCharOfPrevNode() {
   assert(node_iter_ != node_container_->begin());
@@ -136,13 +136,16 @@ ptrdiff_t LinkedBufferIter::operator-(const LinkedBufferIter &rhs) const {
 ssize_t LinkedBuffer::writeFromFD(int fd) {
   int sz_to_read;
   ioctl(fd, FIONREAD, &sz_to_read);
+//  std::vector<char> buf(kTmpBuffSize);
   char buf[sz_to_read];
 
   const ssize_t n = sysw::read(fd, buf, sz_to_read);
   if (n <= 0) return n;
 
-  append(buf);
-  return 0;
+//  buf.resize(static_cast<size_t>(n));
+//  buf.shrink_to_fit();
+  append(buf, static_cast<size_t>(sz_to_read));
+  return n;
 }
 
 ssize_t LinkedBuffer::readToFD(int fd) {
@@ -151,11 +154,18 @@ ssize_t LinkedBuffer::readToFD(int fd) {
   if (n < 0) return n;
 
   read(static_cast<size_t>(n));
-  return 0;
+  return n;
 }
 
 void LinkedBuffer::append(const char *buf, size_t len) {
   buffer_.emplace_back(buf, buf+len);
+  if (buffer_.size() == 1) {
+    reader_iter_.set(buffer_.begin(), buffer_.begin()->begin(), &buffer_);
+  }
+}
+
+void LinkedBuffer::append(CharContainer&& vec) {
+  buffer_.push_back(std::move(vec));
   if (buffer_.size() == 1) {
     reader_iter_.set(buffer_.begin(), buffer_.begin()->begin(), &buffer_);
   }

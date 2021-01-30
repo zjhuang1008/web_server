@@ -135,6 +135,7 @@ public:
     return reader_iter_;
   }
 
+  void append(CharContainer&& vec);
   void append(const char *buf, size_t len);
   void append(const char *str) { append(str, strlen(str)); }
   void append(const std::string& str) { append(str.c_str(), str.size()); }
