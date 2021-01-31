@@ -23,6 +23,11 @@ int main(int argc, char* argv[]) {
     resp.setHeader("Content-type", "text/plain");
     resp.setBody("Hello World\r\n");
   });
+  server.setResponseCallback("/long", [](const HTTPRequest& req, HTTPResponse& resp) {
+    resp.setStatusCode(HttpStatusCode::k200Ok);
+    resp.setHeader("Content-type", "text/plain");
+    resp.setBody(std::string(5000, 'a'));
+  });
   server.setResponseCallback("/", [](const HTTPRequest& req, HTTPResponse& resp) {
     resp.setStatusCode(HttpStatusCode::k200Ok);
     resp.setHeader("Content-type", "text/plain");

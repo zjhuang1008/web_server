@@ -10,6 +10,7 @@
 using namespace net;
 
 static constexpr size_t kTmpBuffSize = 65536;  // 64KB
+static constexpr size_t kMinNodeSize = 1024;
 
 void LinkedBufferIter::toLastCharOfPrevNode() {
   assert(node_iter_ != node_container_->begin());
@@ -133,24 +134,36 @@ ptrdiff_t LinkedBufferIter::operator-(const LinkedBufferIter &rhs) const {
 //  return -diff;
 //}
 
-ssize_t LinkedBuffer::writeFromFD(int fd) {
-  int sz_to_read;
-  ioctl(fd, FIONREAD, &sz_to_read);
-//  std::vector<char> buf(kTmpBuffSize);
-  char buf[sz_to_read];
+// with ioctl
+//ssize_t LinkedBuffer::writeFromFD(int fd) {
+//  int sz_to_read;
+//  ioctl(fd, FIONREAD, &sz_to_read);
+//  std::vector<char> buf(static_cast<size_t>(sz_to_read));
+//
+//  const ssize_t n = sysw::read(fd, &(*buf.begin()), sz_to_read);
+//  if (n <= 0) return n;
+//
+//  append(std::move(buf));
+//  return n;
+//}
 
-  const ssize_t n = sysw::read(fd, buf, sz_to_read);
+// without ioctl
+ssize_t LinkedBuffer::writeFromFD(int fd) {
+  char buf[kTmpBuffSize];
+
+  const ssize_t n = sysw::read(fd, buf, kTmpBuffSize);
   if (n <= 0) return n;
 
-//  buf.resize(static_cast<size_t>(n));
-//  buf.shrink_to_fit();
-  append(buf, static_cast<size_t>(sz_to_read));
+  append(buf, static_cast<size_t>(n));
   return n;
 }
 
 ssize_t LinkedBuffer::readToFD(int fd) {
-  std::vector<struct iovec> vec = toIOVec();
-  ssize_t n = sysw::writev(fd, &(*vec.begin()), static_cast<int>(vec.size()));
+  size_t node_d = numReadableNodes();
+  struct iovec vec[node_d];
+
+  toIOVec(vec, node_d);
+  ssize_t n = sysw::writev(fd, vec, static_cast<int>(node_d));
   if (n < 0) return n;
 
   read(static_cast<size_t>(n));
@@ -158,31 +171,49 @@ ssize_t LinkedBuffer::readToFD(int fd) {
 }
 
 void LinkedBuffer::append(const char *buf, size_t len) {
-  buffer_.emplace_back(buf, buf+len);
-  if (buffer_.size() == 1) {
+  if (buffer_.size() == 0) {
+    addNewNode(buf, len);
     reader_iter_.set(buffer_.begin(), buffer_.begin()->begin(), &buffer_);
+  } else {
+    auto&& last_node = std::prev(buffer_.end());
+    if (last_node->size() + len < kMinNodeSize) {
+      last_node->insert(last_node->end(), buf, buf+len);
+    } else {
+      addNewNode(buf, len);
+    }
   }
 }
 
-void LinkedBuffer::append(CharContainer&& vec) {
+void LinkedBuffer::addNewNode(const char *buf, size_t len) {
+  CharContainer vec;
+  // ensure that the capacity of the vector is at least kMinNodeSize
+  // so that the insert in the future will not need to reallocate the vector.
+  vec.reserve(std::max(kMinNodeSize, len));
+  vec.assign(buf, buf + len);
   buffer_.push_back(std::move(vec));
-  if (buffer_.size() == 1) {
-    reader_iter_.set(buffer_.begin(), buffer_.begin()->begin(), &buffer_);
-  }
 }
 
-std::vector<struct iovec> LinkedBuffer::toIOVec() const {
-  size_t node_d = numReadableNodes();
-  std::vector<struct iovec> vec;
-  vec.reserve(node_d);
+//void LinkedBuffer::append(CharContainer&& vec) {
+//  if (buffer_.size() == 0) {
+//    buffer_.push_back(std::move(vec));
+//    reader_iter_.set(buffer_.begin(), buffer_.begin()->begin(), &buffer_);
+//  } else {
+//    auto&& last_node = std::prev(buffer_.end());
+//    if (last_node->size() < kMinNodeSize) {
+//      last_node->insert(last_node->end(), vec.begin(), vec.end());
+//    } else {
+//      buffer_.push_back(std::move(vec));
+//    }
+//  }
+//}
 
+void LinkedBuffer::toIOVec(struct iovec* vec, size_t num) const {
+  size_t i = 0;
   for (iterator iter(reader_iter_); iter.getNodeIter() != buffer_.end(); iter.toFirstCharOfNextNode()) {
-    struct iovec v;
-    v.iov_base = &(*iter);
-    v.iov_len = iter.charDistanceToEndOfNode();
-    vec.push_back(v);
+    vec[i].iov_base = &(*iter);
+    vec[i].iov_len = iter.charDistanceToEndOfNode();
+    ++ i;
   }
-  return vec;
 }
 
 bool LinkedBuffer::read(size_t n) {

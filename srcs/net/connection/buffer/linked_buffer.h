@@ -135,7 +135,7 @@ public:
     return reader_iter_;
   }
 
-  void append(CharContainer&& vec);
+//  void append(CharContainer&& vec);
   void append(const char *buf, size_t len);
   void append(const char *str) { append(str, strlen(str)); }
   void append(const std::string& str) { append(str.c_str(), str.size()); }
@@ -159,8 +159,9 @@ private:
 
   iterator reader_iter_;
 
-  std::vector<struct iovec> toIOVec() const;
+  void toIOVec(struct iovec* vec, size_t num) const;
   size_t numReadableNodes() const { return static_cast<size_t>(buffer_.end() - reader_iter_.getNodeIter()); }
+  void addNewNode(const char *buf, size_t len);
 };
 
 } // namespace net
