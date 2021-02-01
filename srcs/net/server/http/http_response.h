@@ -4,12 +4,12 @@
 #include <unordered_map>
 
 #include "srcs/net/types.h"
-#include "srcs/utils/uncopyable.h"
+#include "srcs/utils/copyable.h"
 #include "srcs/net/server/http/http_literal.h"
 
 namespace net {
 
-class HTTPResponse : private Uncopyable {
+class HTTPResponse : public Copyable {
 public:
   HTTPResponse()
     : version_(HttpVersion::kHttp11),

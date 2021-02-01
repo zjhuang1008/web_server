@@ -32,3 +32,8 @@ For example, to set MIN_LOG_LEVEL as DEBUG, we can type this
 ```shell script
 export MIN_LOG_LEVEL=0
 ```
+
+## compile options
+
+set USE_RESP_CACHE=ON to cache the http_request, such that 
+http_response will be cached for the same http_request.   

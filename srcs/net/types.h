@@ -22,6 +22,8 @@ namespace net {
 
   class HTTPResponse;
   class HTTPRequest;
+  using HTTPResponsePtr = std::shared_ptr<HTTPResponse>;
+  using HTTPRequestPtr = std::shared_ptr<HTTPRequest>;
 
   using Callback = std::function<void()>;
 

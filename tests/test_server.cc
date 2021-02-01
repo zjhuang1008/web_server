@@ -18,20 +18,20 @@ int main(int argc, char* argv[]) {
 
   HTTPServer<Buffer> server(loop, num_io_threads, address);
 
-  server.setResponseCallback("/hello", [](const HTTPRequest& req, HTTPResponse& resp) {
-    resp.setStatusCode(HttpStatusCode::k200Ok);
-    resp.setHeader("Content-type", "text/plain");
-    resp.setBody("Hello World\r\n");
+  server.setResponseCallback("/hello", [](const HTTPRequestPtr& req, HTTPResponsePtr& resp) {
+    resp->setStatusCode(HttpStatusCode::k200Ok);
+    resp->setHeader("Content-type", "text/plain");
+    resp->setBody("Hello World\r\n");
   });
-  server.setResponseCallback("/long", [](const HTTPRequest& req, HTTPResponse& resp) {
-    resp.setStatusCode(HttpStatusCode::k200Ok);
-    resp.setHeader("Content-type", "text/plain");
-    resp.setBody(std::string(5000, 'a'));
+  server.setResponseCallback("/long", [](const HTTPRequestPtr& req, HTTPResponsePtr& resp) {
+    resp->setStatusCode(HttpStatusCode::k200Ok);
+    resp->setHeader("Content-type", "text/plain");
+    resp->setBody(std::string(5000, 'a'));
   });
-  server.setResponseCallback("/", [](const HTTPRequest& req, HTTPResponse& resp) {
-    resp.setStatusCode(HttpStatusCode::k200Ok);
-    resp.setHeader("Content-type", "text/plain");
-    resp.setBody("Home\r\n");
+  server.setResponseCallback("/", [](const HTTPRequestPtr& req, HTTPResponsePtr& resp) {
+    resp->setStatusCode(HttpStatusCode::k200Ok);
+    resp->setHeader("Content-type", "text/plain");
+    resp->setBody("Home\r\n");
   });
 
   server.start();

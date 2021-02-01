@@ -18,11 +18,15 @@ public:
     kExpectBody,
     kGotAll,
   };
-  HTTPContext() : state_(HTTPRequestParseState::kExpectRequestLine) {};
+  HTTPContext()
+    : state_(HTTPRequestParseState::kExpectRequestLine),
+      request_(new HTTPRequest) {
+
+  };
 
   void resetState() { state_ = HTTPRequestParseState::kExpectRequestLine; }
   bool parseFinished() { return state_ == HTTPRequestParseState::kGotAll; }
-  const HTTPRequest& request() { return request_; }
+  const HTTPRequestPtr& request() { return request_; }
 
   template<typename BufferType>
   bool parseRequest(BufferType& buff);
@@ -38,7 +42,7 @@ public:
 //  bool parseBody(const char* start, const char* end);
 private:
   HTTPRequestParseState state_;
-  HTTPRequest request_;
+  HTTPRequestPtr request_;
 };
 
 template<typename BufferType>
@@ -71,7 +75,7 @@ bool HTTPContext::parseOneLine(_RandomAccessIterator start, _RandomAccessIterato
     case HTTPRequestParseState::kExpectHeader:
       if (start == end) {
         // meet empty line
-        state_ = request_.expectBody() ?
+        state_ = request_->expectBody() ?
                  HTTPRequestParseState::kExpectBody :
                  HTTPRequestParseState::kGotAll;
 
@@ -102,7 +106,7 @@ template<typename _RandomAccessIterator>
 bool HTTPContext::parseRequestLine(_RandomAccessIterator start, _RandomAccessIterator end) {
   // set method
   auto&& split = std::find(start, end, ' ');
-  if (split == end || !request_.setMethod(start, split))
+  if (split == end || !request_->setMethod(start, split))
     return false;
 
   // set URI
@@ -110,24 +114,24 @@ bool HTTPContext::parseRequestLine(_RandomAccessIterator start, _RandomAccessIte
   split = std::find(start, end, '?');
   if (split != end) {
     // request has query
-    if (!request_.setPath(start, split))
+    if (!request_->setPath(start, split))
       return false;
 
     start = split + 1;
     split = std::find(start, end, ' ');
-    if (!request_.setQuery(start, split))
+    if (!request_->setQuery(start, split))
       return false;
   } else {
     // request has no query
     split = std::find(start, end, ' ');
-    if (!request_.setPath(start, split))
+    if (!request_->setPath(start, split))
       return false;
   }
 
   // set version
   start = split + 1;
 
-  return request_.setVersion(start, end);
+  return request_->setVersion(start, end);
 }
 
 template<typename _RandomAccessIterator>
@@ -135,7 +139,7 @@ bool HTTPContext::parseHeader(_RandomAccessIterator start, _RandomAccessIterator
   _RandomAccessIterator colon = std::find(start, end, ':');
   if (colon == end) return false;
 
-  return request_.setHeader(start, colon, end);
+  return request_->setHeader(start, colon, end);
 }
 
 } // namespace net
