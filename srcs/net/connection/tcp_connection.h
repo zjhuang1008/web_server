@@ -7,23 +7,26 @@
 
 #include "srcs/utils/uncopyable.h"
 #include "srcs/net/types.h"
-#include "srcs/net/connection/buffer.h"
+#include "srcs/net/connection/buffer/buffer_factory.h"
 #include "srcs/net/address/socket_address.h"
 
 #include <boost/any.hpp>
+#include <srcs/net/fd_handler/fd_handler.h>
 
 namespace net {
 
+template<typename BufferType>
 class TCPConnection : private Uncopyable,
-                      public std::enable_shared_from_this<TCPConnection> {
+                      public std::enable_shared_from_this<TCPConnection<BufferType>> {
 public:
   enum class Status {
     kConnecting, kConnected, kDisconnecting, kDisconnected
   };
 
-  using CreateCallback = std::function<void(const TCPConnectionPtr&)>;
-  using CloseCallback = std::function<void(const TCPConnectionPtr&)>;
-  using ReadCallback = std::function<void(Buffer&, const TCPConnectionPtr&)>;
+  using CreateCallback = std::function<void(const TCPConnectionPtr<BufferType>&)>;
+  using CloseCallback = std::function<void(const TCPConnectionPtr<BufferType>&)>;
+  using ReadCallback = std::function<void(BufferType&, const TCPConnectionPtr<BufferType>&)>;
+  using SendCallback = std::function<void(BufferType&)>;
 
   TCPConnection(EventLoopPtr& io_loop,
                 FDHandler socket_fd,
@@ -50,7 +53,7 @@ public:
   const boost::any& getContext() { return context_; }
   boost::any* getMutableContext() { return &context_; }
 
-  void send(Buffer buffer);
+  void send(SendCallback cb);
 //  void sendInLoop(Buffer buffer);
 
   void shutdown();
@@ -62,8 +65,8 @@ private:
   std::string name_;
   Status status_;
 
-  Buffer in_buffer_;
-  Buffer out_buffer_;
+  BufferType in_buffer_;
+  BufferType out_buffer_;
 
   CreateCallback createCallback_;
   CloseCallback closeCallback_;

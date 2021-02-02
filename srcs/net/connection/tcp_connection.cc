@@ -8,10 +8,12 @@
 #include "srcs/net/thread/event_loop.h"
 #include "srcs/logger/logger.h"
 #include "srcs/net/sys_wrapper/sysw.h"
+#include "srcs/net/connection/buffer/buffer_factory.h"
 
 using namespace net;
 
-TCPConnection::TCPConnection(EventLoopPtr& io_loop,
+template<typename BufferType>
+TCPConnection<BufferType>::TCPConnection(EventLoopPtr& io_loop,
                              FDHandler socket_fd,
                              const SocketAddress& host_addr,
                              const SocketAddress& peer_addr,
@@ -29,17 +31,19 @@ TCPConnection::TCPConnection(EventLoopPtr& io_loop,
   LOG(DEBUG) << "connection " << name_ << " receive socket fd: " << channel_->fd();
 }
 
-void TCPConnection::handleCreate() {
+template<typename BufferType>
+void TCPConnection<BufferType>::handleCreate() {
   assert(status_ == Status::kConnecting);
 //  LOG(DEBUG) << "connection " << name_ << " created";
   channel_->enableReading();
   io_loop_->addChannelInPoller(channel_);
   status_ = Status::kConnected;
 
-  createCallback_(shared_from_this());
+  createCallback_(this->shared_from_this());
 }
 
-void TCPConnection::handleClose() {
+template<typename BufferType>
+void TCPConnection<BufferType>::handleClose() {
   if (status_ != Status::kDisconnected) {
     LOG(DEBUG) << "connection " << name_ << " closed";
     io_loop_->removeChannelInPoller(channel_);
@@ -47,22 +51,24 @@ void TCPConnection::handleClose() {
     // set status_ to kDisconnected to prevent this function being level-triggered again
     status_ = Status::kDisconnected;
 
-    closeCallback_(shared_from_this());
+    closeCallback_(this->shared_from_this());
   }
 }
 
-void TCPConnection::handleError() {
+template<typename BufferType>
+void TCPConnection<BufferType>::handleError() {
   handleClose();
 }
 
-void TCPConnection::handleRead() {
+template<typename BufferType>
+void TCPConnection<BufferType>::handleRead() {
   if (status_ == Status::kConnected || status_ == Status::kDisconnecting) {
     // when status_ is Status::kDisconnecting, EOF will read from the socket fd.
     LOG(DEBUG) << "connection " << name_ << " read socket fd: " << channel_->fd();
     ssize_t n = in_buffer_.writeFromFD(channel_->fd());
 
     if (n > 0) {
-      readCallback_(in_buffer_, shared_from_this());
+      readCallback_(in_buffer_, this->shared_from_this());
     } else if (n == 0) {
       // read EOF (it means another end calls shutdown)
       handleClose();
@@ -73,7 +79,8 @@ void TCPConnection::handleRead() {
   }
 }
 
-void TCPConnection::handleWrite() {
+template<typename BufferType>
+void TCPConnection<BufferType>::handleWrite() {
   assert(status_ == Status::kConnected);
 
   LOG(DEBUG) << "connection " << name_ << " write socket fd: " << channel_->fd();
@@ -100,33 +107,33 @@ void TCPConnection::handleWrite() {
   }
 }
 
-void TCPConnection::send(Buffer buffer) {
+template<typename BufferType>
+void TCPConnection<BufferType>::send(SendCallback cb) {
   assertInLoop();
 
-  // send buffer immediately
-  ssize_t n = buffer.readToFD(channel_->fd());
-  if (n < 0) {
-    LOGSYS(ERROR) << "error happened when writing to connection " << name_;
-    handleError();
-    return;
-  }
+  // SendCallback will append the response message to the out_buffer_
+  cb(out_buffer_);
 
-  if (buffer.readableSize() > 0) {
-    out_buffer_.append(buffer.readerIter(), buffer.readableSize());
+  if (!channel_->isWriting()) {
+    // send buffer immediately if the connfd is not listened by epoll
+    // if the message can be sent in one call, then we don't need to let epoll to listen on this connfd
+    ssize_t n = out_buffer_.readToFD(channel_->fd());
+    if (n < 0) {
+      LOGSYS(ERROR) << "error happened when writing to connection " << name_;
+      handleError();
+      return;
+    }
 
-    // TODO: highWaterMarkCallback
-
-    if (!channel_->isWriting()) {
+    if (out_buffer_.readableSize() > 0) {
+      // if there is any content in the out_buffer_, then add this connfd to epoll
       channel_->enableWriting();
       io_loop_->updateChannelInPoller(channel_);
-
-      // perform write immediately when no writes before
-      // handleWrite();
     }
   }
 }
 
-void TCPConnection::shutdown() {
+template<typename BufferType>
+void TCPConnection<BufferType>::shutdown() {
   assertInLoop();
   if (status_ == Status::kDisconnected)
     return;
@@ -139,6 +146,12 @@ void TCPConnection::shutdown() {
   }
 }
 
-void TCPConnection::assertInLoop() {
+template<typename BufferType>
+void TCPConnection<BufferType>::assertInLoop() {
   assert(io_loop_->isInLoopThread());
 }
+
+
+// explict instantiations
+template class net::TCPConnection<LinkedBuffer>;
+template class net::TCPConnection<Buffer>;

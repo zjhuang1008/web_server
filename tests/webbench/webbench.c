@@ -38,9 +38,11 @@
 volatile int timerexpired=0;
 int speed=0;
 int failed=0;
-int bytes=0;
+long long bytes=0;
 long long total_time_to_connect;
 long long total_time_to_response;
+
+char buf[65536];
 
 int Socket(const char *host, int clientPort, int set_nonblock) {
   int sock;
@@ -383,7 +385,8 @@ delta_timeval( struct timeval* start, struct timeval* end ) {
 /* vraci system rc error kod */
 static int bench(void)
 {
-  int i,j,k;
+  int i,j;
+  long long k;
   long long total_time_connect_delta, total_time_to_response_delta;
   struct timeval benchcore_start;
   struct timeval benchcore_end;
@@ -452,7 +455,7 @@ static int bench(void)
       return 3;
     }
     /* fprintf(stderr,"Child - %d %d\n",speed,failed); */
-    fprintf(f,"%d %d %d %lld %lld\n",speed,failed,bytes,total_time_to_connect,total_time_to_response);
+    fprintf(f,"%d %d %lld %lld %lld\n",speed,failed,bytes,total_time_to_connect,total_time_to_response);
     fclose(f);
 
     return 0;
@@ -474,7 +477,7 @@ static int bench(void)
 
     while(1)
     {
-      pid=fscanf(f,"%d %d %d %lld %lld",&i,&j,&k,&total_time_connect_delta, &total_time_to_response_delta);
+      pid=fscanf(f,"%d %d %lld %lld %lld",&i,&j,&k,&total_time_connect_delta, &total_time_to_response_delta);
       if(pid<2)
       {
         fprintf(stderr,"Some of our childrens died.\n");
@@ -493,9 +496,9 @@ static int bench(void)
 
     fclose(f);
 
-    printf("\nSpeed=%d pages/min, %d bytes/sec.\nRequests: %d succeed, %d failed.\n",
+    printf("\nSpeed=%d pages/min, %lld bytes/sec.\nRequests: %d succeed, %d failed.\n",
         (int)((speed+failed)/(benchtime/60.0f)),
-        (int)(bytes/(float)benchtime),
+        (long long)(bytes/(float)benchtime),
         speed,
         failed);
     printf("mean time to connect (ms)=%g\n", (float) total_time_to_connect / (float) speed / 1000.0);
@@ -508,7 +511,6 @@ static int bench(void)
 void benchcore(const char *host,const int port,const char *req)
 {
   int rlen = strlen(req);
-  char buf[1500];
   int sock_fd,i;
   int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
   struct sigaction sa;
@@ -583,7 +585,7 @@ void benchcore(const char *host,const int port,const char *req)
           responsed = 1;
         }
   //        printf("receive response.\n");
-        i = read(sock_fd, buf_ptr, 1500);
+        i = read(sock_fd, buf_ptr, sizeof(buf));
         if (i < 0) {
           if (errno == EAGAIN) continue;
           printf("read failed with error: %s (%d)\n", strerror(errno), errno);

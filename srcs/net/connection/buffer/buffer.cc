@@ -1,15 +1,12 @@
-#include "srcs/net/connection/buffer.h"
+#include "buffer.h"
 
 #include <string>
 
-#include "srcs/net/fd_handler/fd_handler.h"
 #include "srcs/net/sys_wrapper/sysw.h"
 
 using namespace net;
 
 static constexpr size_t kTmpBuffSize = 65536;  // 64KB
-
-const char* Buffer::kCRLF = "\r\n";
 
 bool Buffer::read(size_t len) {
   size_t readable_sz = readableSize();
@@ -24,7 +21,7 @@ bool Buffer::read(size_t len) {
 }
 
 bool Buffer::readUntil(const char *iter) {
-  if (iter >= readerIter() && iter <= writerIter()) {
+  if (iter >= readerIter() && iter <= end()) {
     return read(static_cast<size_t>(iter - readerIter()));
   } else {
     return false;
@@ -37,13 +34,15 @@ ssize_t Buffer::writeFromFD(int fd) {
 
   size_t writable_sz = writableSize();
   struct iovec vec[2];
-  vec[0].iov_base = writerIter();
+  vec[0].iov_base = end();
   vec[0].iov_len = writable_sz;
   vec[1].iov_base = tmp_buf;
   vec[1].iov_len = kTmpBuffSize;
   
   const ssize_t n = sysw::readv(fd, vec, 2);
-  if (n <= 0) return n;
+  if (n <= 0) {
+    return n;
+  }
 
   auto n_p = static_cast<size_t>(n);
   if (n_p <= writable_sz) {
@@ -65,14 +64,14 @@ ssize_t Buffer::readToFD(int fd) {
 
   reader_index_ += static_cast<size_t>(n);
 
-  return 0;
+  return n;
 }
 
 void Buffer::append(const char *tmp_buf, size_t len) {
   size_t reuseable_sz = reader_index_ - kPrependSize;
   if (reuseable_sz >= len) {
     // copy forward to reserve space to write
-    std::copy(readerIter(), writerIter(), prependIter());
+    std::copy(readerIter(), end(), prependIter());
     writer_index_ = kPrependSize + readableSize();
     reader_index_ = kPrependSize;
   } else {
@@ -81,7 +80,7 @@ void Buffer::append(const char *tmp_buf, size_t len) {
   }
 
   // do append
-  std::copy(tmp_buf, tmp_buf+len, writerIter()); 
+  std::copy(tmp_buf, tmp_buf+len, end());
   writer_index_ += len;
 }
 

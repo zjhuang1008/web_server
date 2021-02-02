@@ -28,7 +28,7 @@ extern const std::vector<std::string> gHttpVersions;
 extern const std::vector<int> gHttpStatusCodes;
 extern const std::vector<std::string> gHttpStatusMessages;
 
-
+extern const char *kCRLF;
 } // namespace net
 
 

@@ -57,9 +57,9 @@ const constexpr char* kLogLevelName[NUM_LOG_LEVELS] = {
 };
 
 LogLevel initMinLogLevel() {
-  int min_log_lvl = 0; // default log level
+  long min_log_lvl = 0; // default log level
   char *min_log_level_env = ::getenv("MIN_LOG_LEVEL");
-  if (min_log_level_env) min_log_lvl = atoi(min_log_level_env);
+  if (min_log_level_env) min_log_lvl = strtol(min_log_level_env, nullptr, 10);
   
   return static_cast<LogLevel>(min_log_lvl);
 }
