@@ -32,21 +32,21 @@ For example, to set MIN_LOG_LEVEL as DEBUG, we can type this
 export MIN_LOG_LEVEL=0
 ```
 
-### set `USE_RESP_CACHE` to use cache on request
+### Set `USE_RESP_CACHE` to use cache on request
 If you want http_response to be cached for the same http_request, set this:
 ```shell script
 export USE_RESP_CACHE=1
 ```
 It will be useful when the request needs long time to handle.
 
-## experiments
+## Experiments
 
-### environment:
+### Environment:
 - OS: Ubuntu 18.04
 - CPU: i7-8700 CPU, 12 logical cpus, 6 cores
 - memory: 16GB
 
-### tool for benchmarking 
+### Tool for benchmarking 
 The tool used is based on the open source benchmark tool [webbench](http://home.tiscali.cz/~cz210552/webbench.html).
 I make some changes to benchmark more metrics (e.g. average time to connect, average time to response). 
 The code is in `tests/webbench/webbench.c`. For all experiments, run it by 
@@ -60,7 +60,7 @@ The benchmark metrics used are:
 - `conn_t`: the average time to connect (ms)
 - `resp_t`: the average time to first response (ms)
 
-### comparison
+### Comparison
 
 For fair comparison, the test methods for each experiments are the same: 
 - uses 1 listen thread and 4 I/O threads
