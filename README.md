@@ -43,7 +43,7 @@ It will be useful when the request needs long time to handle.
 
 ### Environment:
 - OS: Ubuntu 18.04
-- CPU: i7-8700 CPU, 12 logical cpus, 6 cores
+- CPU: i7-8700, 12 logical cpus, 6 cores
 - memory: 16GB
 
 ### Tool for benchmarking 
