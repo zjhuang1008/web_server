@@ -1,4 +1,5 @@
 #include <utility>
+#include <unistd.h>
 
 #include "srcs/net/server/http/http_server.h"
 #include "srcs/net/thread/event_loop.h"
@@ -27,6 +28,9 @@ int main(int argc, char* argv[]) {
     resp->setStatusCode(HttpStatusCode::k200Ok);
     resp->setHeader("Content-type", "text/plain");
     resp->setBody(std::string(5000, 'a'));
+
+    // sleep 20ms to simulate the delay of I/O or compute task.
+    // usleep(20000);
   });
   server.setResponseCallback("/", [](const HTTPRequestPtr& req, HTTPResponsePtr& resp) {
     resp->setStatusCode(HttpStatusCode::k200Ok);

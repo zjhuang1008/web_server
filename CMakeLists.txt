@@ -9,12 +9,6 @@ if (${WITH_EPOLL})
   add_definitions(-DUSE_EPOLL)
 endif()
 
-option(USE_RESP_CACHE "set ON to use RESP_CACHE" ON)
-if (${USE_RESP_CACHE})
-  message(STATUS "build with resp_cache")
-  add_definitions(-DUSE_RESP_CACHE)
-endif()
-
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()

@@ -48,7 +48,7 @@ private:
 //  ResponseCallback responseCallback_;
   std::unordered_map<std::string, ResponseCallback> responseCallbacks_;
 
-  #ifdef USE_RESP_CACHE
+  static bool kUseRespCache;
   using CacheNode = struct {
     HTTPRequestPtr req;
     HTTPResponsePtr resp;
@@ -65,7 +65,6 @@ private:
 //  mutable boost::shared_mutex mutex_g_;
   void addRespCache(const HTTPRequestPtr& req, const HTTPResponsePtr& resp);
   bool getRespCache(const HTTPRequestPtr& req, HTTPResponsePtr& resp);
-  #endif
 
   void connectionOnCreate(const TCPConnectionPtr<BufferType>& conn);
 

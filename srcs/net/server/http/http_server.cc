@@ -12,6 +12,14 @@
 using namespace net;
 
 template<typename BufferType>
+bool HTTPServer<BufferType>::kUseRespCache = []() {
+  long use_resp_cache = 0;
+  char *use_resp_cache_env = ::getenv("USE_RESP_CACHE");
+  if (use_resp_cache_env) use_resp_cache = strtol(use_resp_cache_env, nullptr, 10);
+  return use_resp_cache;
+}();
+
+template<typename BufferType>
 const int HTTPServer<BufferType>::kMaxReqCached = 1024;
 
 template<typename BufferType>
@@ -31,9 +39,9 @@ HTTPServer<BufferType>::HTTPServer(EventLoopPtr& loop, size_t num_io_threads, So
 
   not_found_resp_->setStatusCode(HttpStatusCode::k404NotFound);
   not_found_resp_->setCloseConnection(true);
-  #ifdef USE_RESP_CACHE
-  LOG(DEBUG) << "use resp_cache";
-  #endif
+
+  if (kUseRespCache)
+    LOG(DEBUG) << "use resp_cache";
 }
 
 template<typename BufferType>
@@ -65,8 +73,7 @@ void HTTPServer<BufferType>::connectionOnRead(BufferType& in_buffer, const TCPCo
 
     if (responseCallbacks_.count(path)) {
       // request can be handled
-      #ifdef USE_RESP_CACHE
-      {
+      if (kUseRespCache) {
 //        std::lock_guard<std::mutex> lk(mutex_g_);
         std::lock_guard<SpinLock> lk(spin_lock_);
         if (!getRespCache(request, response)) {
@@ -74,13 +81,12 @@ void HTTPServer<BufferType>::connectionOnRead(BufferType& in_buffer, const TCPCo
           responseCallbacks_[path](request, response);
           addRespCache(request, response);
         }
-      }
 //      LOG(ERROR) << "cache value: " << request->to_hash_value();
 //      LOG(ERROR) << "size of cache_node_list: " << cache_node_list_.size();
-      #else
+      } else {
         response = std::make_shared<HTTPResponse>();
         responseCallbacks_[path](request, response);
-      #endif
+      }
 
       // decide whether to close the connection
       if (request->hasHeader("Connection")) {
