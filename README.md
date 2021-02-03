@@ -53,33 +53,33 @@ The code is in `tests/webbench/webbench.c`. For all experiments, run it by
 ```shell script
 ./webbench -t 60 -c 1000 -2 --get http://127.0.0.1:45678/long
 ```
-It will try to connect to the url with 1000 clients (processes) for 60s.
+It will try to connect to the url with 1000 clients (i.e. processes) for 60s.
 The benchmark metrics used are:
 - `#conn`: the number of successful connections per minutes
 - `#bytes`: the number of bytes received from the connection per seconds
-- `conn_t`: the average time to connect (ms)
-- `resp_t`: the average time to first response (ms)
+- `conn_t(ms)`: the average time to connect
+- `resp_t(ms)`: the average time to first response
 
 ### Comparison
 
 For fair comparison, the test methods for each experiments are the same: 
 - uses 1 listen thread and 4 I/O threads
 - disable log
-- run in local, and connect from local
-- the response is "text/plain" with 5000 'a' inside. 
+- the server runs in local, and connect from local
+- the response is "text/plain" with 5000 'a' as content. 
 
-server | `#conn` | `#bytes` | `conn_t` | `resp_t` |
+server | `#conn` | `#bytes` | `conn_t(ms)` | `resp_t(ms)` |
 --- | --- | --- | --- | --- |
 [muduo](http://github.com/chenshuo/muduo) | 3304199 | 278873376 | 8.44969 | 4.23476 |
 my | 4283414 | 361519808 | 9.3398 | 3.50479 |
 my (cache with mutex) | 3336020 | 281560096 | 0.949731 | 16.9795 |
 my (cache with spinlock) | 3718228 | 313818464 | 1.58277 | 14.4947 |
 
-We can tell that cache doesn't improve the performance in the light weight job, 
+We can tell that cache doesn't improve the performance for this light-weight job, 
 because it takes little time to prepare the content of the response. To show the
 effects of the cache, I simulate a delay by sleeping 20ms. The results are:
 
-server | `#conn` | `#bytes` | `conn_t` | `resp_t` |
+server | `#conn` | `#bytes` | `conn_t(ms)` | `resp_t(ms)` |
 --- | --- | --- | --- | --- |
 my | 11785 | 994654 | 110.124 | 4765.27 |
 my (cache with spinlock) | 3732111 | 314990080 | 2.28278 | 13.7384 |
